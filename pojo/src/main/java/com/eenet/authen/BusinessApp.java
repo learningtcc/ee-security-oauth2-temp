@@ -1,11 +1,13 @@
 package com.eenet.authen;
 
 import com.eenet.base.BaseEntity;
+import com.eenet.common.BackupDeletedData;
+import com.eenet.common.BackupUpdatedData;
 /**
  * 业务系统信息
  * @author Orion
  */
-public class BusinessApp extends BaseEntity {
+public class BusinessApp extends BaseEntity implements BackupDeletedData,BackupUpdatedData {
 	private static final long serialVersionUID = 8516730683890875834L;
 	private String redirectURIPrefix;//跳转地址前缀
 	private String secretKey;//应用接入秘钥

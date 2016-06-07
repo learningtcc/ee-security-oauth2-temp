@@ -11,11 +11,11 @@ import com.eenet.util.cryptography.RSADecrypt;
 
 @Controller
 public class AdminUserLoginAccountController {
-	@Autowired
+//	@Autowired
 	private RSADecrypt transferRSADecrypt;
-	@Autowired
+//	@Autowired
 	private AdminUserLoginAccountBizService AdminUserLoginAccountBizService;
-	@Autowired
+//	@Autowired
 	private AdminUserCredentialBizService AdminUserCredentialBizService;
 	
 	@RequestMapping(value = "/registeAdminUserLoginAccount", produces = {"application/json;charset=UTF-8"})
@@ -34,7 +34,7 @@ public class AdminUserLoginAccountController {
 	
 	@RequestMapping(value = "/initAdminUserLoginPassword", produces = {"application/json;charset=UTF-8"})
 	@ResponseBody
-	public String initAdminUserLoginPassword(APIRequestIdentity identity, AdminUserCredential curCredential, String password) {
+	public String initAdminUserLoginPassword(APIRequestIdentity identity, AdminUserCredential curCredential) {
 		return null;
 	}
 	

@@ -1,6 +1,8 @@
 package com.eenet.authen;
 
 import com.eenet.base.BaseEntity;
+import com.eenet.common.BackupDeletedData;
+import com.eenet.common.BackupUpdatedData;
 import com.eenet.user.AdminUserInfo;
 
 /**
@@ -8,7 +10,7 @@ import com.eenet.user.AdminUserInfo;
  * @author Orion
  *
  */
-public class AdminUserLoginAccount extends BaseEntity {
+public class AdminUserLoginAccount extends BaseEntity implements BackupDeletedData,BackupUpdatedData {
 	private static final long serialVersionUID = -6762737260719096975L;
 	private AdminUserInfo userInfo;//服务人员基本信息
 	private String loginAccount;//登录账号

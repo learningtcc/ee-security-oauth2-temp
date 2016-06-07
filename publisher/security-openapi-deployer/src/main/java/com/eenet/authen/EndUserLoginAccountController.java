@@ -11,11 +11,11 @@ import com.eenet.util.cryptography.RSADecrypt;
 
 @Controller
 public class EndUserLoginAccountController {
-	@Autowired
+//	@Autowired
 	private RSADecrypt transferRSADecrypt;
-	@Autowired
+//	@Autowired
 	private EndUserLoginAccountBizService EndUserLoginAccountBizService;
-	@Autowired
+//	@Autowired
 	private EndUserCredentialBizService EndUserCredentialBizService;
 	
 	@RequestMapping(value = "/registeEndUserLoginAccount", produces = {"application/json;charset=UTF-8"})
@@ -34,7 +34,7 @@ public class EndUserLoginAccountController {
 	
 	@RequestMapping(value = "/initEndUserLoginPassword", produces = {"application/json;charset=UTF-8"})
 	@ResponseBody
-	public String initEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential curCredential, String password) {
+	public String initEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential curCredential) {
 		return null;
 	}
 	

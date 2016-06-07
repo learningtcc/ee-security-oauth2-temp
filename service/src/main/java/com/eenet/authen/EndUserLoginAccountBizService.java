@@ -16,7 +16,7 @@ public interface EndUserLoginAccountBizService {
 	 * @param user
 	 * @return
 	 */
-	public EndUserLoginAccount registeEndUserLoginAccount(EndUserLoginAccount user);
+	public EndUserLoginAccount registeEndUserLoginAccount(EndUserLoginAccount account);
 	/**
 	 * 最终用户登录账号废弃
 	 * @param code

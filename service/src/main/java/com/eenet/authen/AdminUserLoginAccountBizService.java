@@ -14,7 +14,7 @@ public interface AdminUserLoginAccountBizService {
 	 * @param user
 	 * @return
 	 */
-	public AdminUserLoginAccount registeAdminUserLoginAccount(AdminUserLoginAccount user);
+	public AdminUserLoginAccount registeAdminUserLoginAccount(AdminUserLoginAccount account);
 	/**
 	 * 服务人员登录账号废弃
 	 * @param code

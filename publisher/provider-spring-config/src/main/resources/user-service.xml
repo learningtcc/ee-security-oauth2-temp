@@ -9,21 +9,21 @@
 						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 	<!-- 服务人员信息数据库查询服务 -->
-	<bean id="AdminUserInfoDAOImpl" class="com.eenet.authen.daoimpl.AdminUserInfoDAOImpl">
+	<bean id="AdminUserInfoDAOImpl" class="com.eenet.user.daoimpl.AdminUserInfoDAOImpl">
 		<property name="batisSession" ref="batisSession" />
 	</bean>
 	<!-- 最终用户信息数据库查询服务 -->
-	<bean id="EndUserInfoDAOImpl" class="com.eenet.authen.daoimpl.EndUserInfoDAOImpl">
+	<bean id="EndUserInfoDAOImpl" class="com.eenet.user.daoimpl.EndUserInfoDAOImpl">
 		<property name="batisSession" ref="batisSession" />
 	</bean>
 	
 	<!-- 服务人员管理服务 -->
-	<bean id="AdminUserInfoBizImpl" class="com.eenet.authen.bizimpl.AdminUserInfoBizImpl">
+	<bean id="AdminUserInfoBizImpl" class="com.eenet.user.bizimpl.AdminUserInfoBizImpl">
 		<property name="adminDAOService" ref="AdminUserInfoDAOImpl" />
 		<property name="baseDAOService" ref="AdminUserInfoDAOImpl" />
 	</bean>
 	<!-- 最终用户管理服务 -->
-	<bean id="EndUserInfoBizImpl" class="com.eenet.authen.bizimpl.EndUserInfoBizImpl">
+	<bean id="EndUserInfoBizImpl" class="com.eenet.user.bizimpl.EndUserInfoBizImpl">
 		<property name="endUserDAOService" ref="EndUserInfoDAOImpl" />
 		<property name="baseDAOService" ref="EndUserInfoDAOImpl" />
 	</bean>

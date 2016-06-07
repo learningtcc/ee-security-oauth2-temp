@@ -28,7 +28,8 @@ public class SpringEnvironment {
 			"rdbms-dataSource.xml",
 			"redis.xml",
 			"transaction.xml",
-			"user-service.xml"
+			"user-service.xml",
+			"authen-service.xml"
 		});
 		context.start();
 		SpringEnvironment.context = context;
