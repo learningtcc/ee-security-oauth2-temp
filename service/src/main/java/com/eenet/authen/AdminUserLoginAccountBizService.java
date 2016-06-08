@@ -26,9 +26,17 @@ public interface AdminUserLoginAccountBizService {
 	/**
 	 * 根据登录账号获得服务人员基本信息
 	 * @param loginAccount 登录账号
-	 * @return 主账号
+	 * @return
 	 * 2016年4月7日
 	 * @author Orion
 	 */
 	public AdminUserInfo retrieveAdminUserInfo(String loginAccount);
+	/**
+	 * 根据登录账号获得服务人员登陆账号其他信息
+	 * @param loginAccount 登录账号
+	 * @return
+	 * 2016年4月7日
+	 * @author Orion
+	 */
+	public AdminUserLoginAccount retrieveAdminUserLoginAccountInfo(String loginAccount);
 }

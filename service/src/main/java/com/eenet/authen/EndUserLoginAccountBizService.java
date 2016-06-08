@@ -33,8 +33,14 @@ public interface EndUserLoginAccountBizService {
 	 * @author Orion
 	 */
 	public EndUserInfo retrieveEndUserInfo(String loginAccount);
-	
-
+	/**
+	 * 根据登录账号获得最终用户登陆账号其他信息
+	 * @param loginAccount
+	 * @return 返回对象中带有已经加密的账号登录秘钥
+	 * 2016年6月8日
+	 * @author Orion
+	 */
+	public EndUserLoginAccount retrieveEndUserLoginAccountInfo(String loginAccount);
 	/**
 	 * 获得登录账号私有密码（密文）
 	 * @param loginAccount

@@ -1,6 +1,6 @@
-package com.eenet.authen.bizimpl;
+package com.eenet.user.bizimpl;
 
-import com.eenet.authen.dao.AdminUserInfoDAOService;
+import com.eenet.user.dao.AdminUserInfoDAOService;
 import com.eenet.base.SimpleResultSet;
 import com.eenet.base.biz.SimpleBizImpl;
 import com.eenet.base.query.QueryCondition;

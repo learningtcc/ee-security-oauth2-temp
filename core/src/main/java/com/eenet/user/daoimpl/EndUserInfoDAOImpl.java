@@ -1,6 +1,6 @@
-package com.eenet.authen.daoimpl;
+package com.eenet.user.daoimpl;
 
-import com.eenet.authen.dao.EndUserInfoDAOService;
+import com.eenet.user.dao.EndUserInfoDAOService;
 import com.eenet.base.dao.BaseDAOImpl;
 import com.eenet.common.exception.DBOPException;
 import com.eenet.user.EndUserInfo;

@@ -1,4 +1,4 @@
-package com.eenet.authen.dao;
+package com.eenet.user.dao;
 
 import com.eenet.base.dao.BaseDAOService;
 import com.eenet.common.exception.DBOPException;
