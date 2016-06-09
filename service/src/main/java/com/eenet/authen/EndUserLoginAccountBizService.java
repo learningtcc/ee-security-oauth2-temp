@@ -46,7 +46,7 @@ public interface EndUserLoginAccountBizService {
 	 * @param loginAccount
 	 * @return
 	 */
-	public StringResponse retrieveUserSecretKey(String loginAccount);
+	public StringResponse retrieveEndUserAccountPassword(String loginAccount);
 	
 	/**
 	 * 获得登录账号私有密码（明文）
@@ -54,7 +54,7 @@ public interface EndUserLoginAccountBizService {
 	 * @param StorageRSAEncrypt
 	 * @return
 	 */
-	public StringResponse retrieveUserSecretKey(String loginAccount, RSADecrypt StorageRSAEncrypt);
+	public StringResponse retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt);
 	/**
 	 * 不应该再考虑维护账号的私有密码
 	 */

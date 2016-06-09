@@ -27,7 +27,6 @@ public class AdminUserLoginAccountBizImpl extends SimpleBizImpl implements Admin
 	@Override
 	public AdminUserLoginAccount registeAdminUserLoginAccount(AdminUserLoginAccount account) {
 		AdminUserLoginAccount result = new AdminUserLoginAccount();
-		result.setSuccessful(true);
 		/* 参数检查 */
 		if (account == null) {
 			result.setSuccessful(false);

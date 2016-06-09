@@ -12,8 +12,7 @@ import com.eenet.util.cryptography.RSADecrypt;
 public interface AdminUserCredentialBizService {
 	/**
 	 * 初始化服务人员登录密码
-	 * @param mainAccount
-	 * @param credential 
+	 * @param credential 登录密码属性必须是：带时间戳加密的形式
 	 * @return
 	 * 2016年3月31日
 	 * @author Orion
@@ -22,9 +21,8 @@ public interface AdminUserCredentialBizService {
 	
 	/**
 	 * 修改服务人员登录密码
-	 * @param mainAccount
-	 * @param curCredential
-	 * @param newSecretKey
+	 * @param curCredential 登录密码属性必须是：带时间戳加密的形式
+	 * @param newSecretKey 新密码：明文直接加密的形式（不带时间戳）
 	 * @return
 	 * 2016年3月31日
 	 * @author Orion
@@ -39,6 +37,15 @@ public interface AdminUserCredentialBizService {
 	 * @author Orion
 	 */
 	public SimpleResponse resetAdminUserLoginPassword(String adminUserId);
+	
+	/**
+	 * 获得服务人员秘钥信息
+	 * @param adminUserId 服务人员标识
+	 * @return
+	 * 2016年6月9日
+	 * @author Orion
+	 */
+	public AdminUserCredential retrieveAdminUserCredentialInfo (String adminUserId);
 	
 	/**
 	 * 获得服务人员登录密码（密文）
@@ -57,5 +64,5 @@ public interface AdminUserCredentialBizService {
 	 * 2016年4月7日
 	 * @author Orion
 	 */
-	public StringResponse retrieveAdminUserSecretKey(String adminUserId, RSADecrypt StorageRSAEncrypt);
+	public StringResponse retrieveAdminUserSecretKey(String adminUserId, RSADecrypt decrypt);
 }

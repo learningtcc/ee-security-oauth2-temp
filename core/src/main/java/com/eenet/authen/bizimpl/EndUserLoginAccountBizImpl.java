@@ -156,7 +156,7 @@ public class EndUserLoginAccountBizImpl extends SimpleBizImpl implements EndUser
 	}
 
 	@Override
-	public StringResponse retrieveUserSecretKey(String loginAccount) {
+	public StringResponse retrieveEndUserAccountPassword(String loginAccount) {
 		StringResponse result = new StringResponse();
 		EndUserLoginAccount account = this.retrieveEndUserLoginAccountInfo(loginAccount);
 		result.setSuccessful(result.isSuccessful());
@@ -168,8 +168,8 @@ public class EndUserLoginAccountBizImpl extends SimpleBizImpl implements EndUser
 	}
 
 	@Override
-	public StringResponse retrieveUserSecretKey(String loginAccount, RSADecrypt StorageRSAEncrypt) {
-		StringResponse result = this.retrieveUserSecretKey(loginAccount);
+	public StringResponse retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt) {
+		StringResponse result = this.retrieveEndUserAccountPassword(loginAccount);
 		if (result.isSuccessful()) {
 			try {
 				String plainText = RSAUtil.decrypt(StorageRSAEncrypt, result.getResult());

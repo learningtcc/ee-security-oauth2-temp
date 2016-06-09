@@ -16,9 +16,12 @@ public class APIRequestIdentity implements java.io.Serializable {
 	public static final String GRANT_CODE = "C1A3285B43154C06BB1B422967F81B3F";
 	public static final String ACCESS_TOKEN = "8E2305C0AB8B400B8A280828D1A94C6C";
 	public static final String FRESS_TOKEN = "4D457BF80BEF41298AE5A8AEC0A130BD";
+	public static final String REDIRECT_URL = "http://hz.zhigongjiaoyu.com/";
+	
 	public static final String APP_ID = "zhigongjiaoyu";
 	public static final String APP_PASSWORD = "pASS12#";
-	public static final String REDIRECT_URL = "http://hz.zhigongjiaoyu.com/";
+	public static final String APP_ID2 = "2F4766CE823D46528C8DF40B3F09266D";
+	public static final String APP_PASSWORD2 = "aSder%82";
 	
 	private static final long serialVersionUID = 9186253949644956731L;
 	private String appId;//应用标识
