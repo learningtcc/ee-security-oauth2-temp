@@ -1,8 +1,8 @@
 package com.eenet.authen.bizimpl;
 
-import com.eenet.authen.AdminUserCredential;
-import com.eenet.authen.AdminUserCredentialBizService;
-import com.eenet.authen.cacheSyn.SynAdminUserCredential2Redis;
+import com.eenet.authen.EndUserCredential;
+import com.eenet.authen.EndUserCredentialBizService;
+import com.eenet.authen.cacheSyn.SynEndUserCredential2Redis;
 import com.eenet.base.SimpleResponse;
 import com.eenet.base.SimpleResultSet;
 import com.eenet.base.StringResponse;
@@ -11,53 +11,53 @@ import com.eenet.base.query.ConditionItem;
 import com.eenet.base.query.QueryCondition;
 import com.eenet.base.query.RangeType;
 import com.eenet.common.cache.RedisClient;
-import com.eenet.user.AdminUserInfo;
-import com.eenet.user.AdminUserInfoBizService;
+import com.eenet.user.EndUserInfo;
+import com.eenet.user.EndUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
 import com.eenet.util.cryptography.EncryptException;
 import com.eenet.util.cryptography.RSADecrypt;
 import com.eenet.util.cryptography.RSAEncrypt;
 import com.eenet.util.cryptography.RSAUtil;
 /**
- * 服务人员登录秘钥实现逻辑
+ * 最终用户登录秘钥服务实现逻辑
  * @author Orion
- * 2016年6月8日
+ * 2016年6月9日
  */
-public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUserCredentialBizService {
+public class EndUserCredentialBizImpl extends SimpleBizImpl implements EndUserCredentialBizService {
 	private RedisClient RedisClient;//Redis客户端
 	private RSAEncrypt StorageRSAEncrypt;//数据存储加密公钥
 	private RSADecrypt StorageRSADecrypt;//数据存储解密私钥
 	private RSADecrypt TransferRSADecrypt;//数据传输解密私钥
-	private AdminUserInfoBizService adminUserInfoBizService;//服务人员信息服务
-
+	private EndUserInfoBizService endUserInfoBizService;//最终用户信息服务
+	
 	@Override
-	public SimpleResponse initAdminUserLoginPassword(AdminUserCredential credential) {
+	public SimpleResponse initEndUserLoginPassword(EndUserCredential credential) {
 		SimpleResponse result = new SimpleResponse();
 		/* 参数检查 */
 		if (credential == null) {
 			result.setSuccessful(false);
-			result.addMessage("要初始化的服务人员登录秘钥未知("+this.getClass().getName()+")");
+			result.addMessage("要初始化的最终用户登录秘钥未知("+this.getClass().getName()+")");
 			return result;
-		} else if (EEBeanUtils.isNULL(credential.getPassword()) || credential.getAdminUser()==null || EEBeanUtils.isNULL(credential.getAdminUser().getAtid())) {
+		} else if (EEBeanUtils.isNULL(credential.getPassword()) || credential.getEndUser()==null || EEBeanUtils.isNULL(credential.getEndUser().getAtid())) {
 			result.setSuccessful(false);
-			result.addMessage("要初始化的服务人员登录秘钥参数不全，ADMIN USER标识、登录秘钥均不可为空("+this.getClass().getName()+")");
+			result.addMessage("要初始化的最终用户登录秘钥参数不全，END USER标识、登录秘钥均不可为空("+this.getClass().getName()+")");
 		}
 		if (!result.isSuccessful())
 			return result;
 		
-		/* 判断服务人员是否已设置过密码，有则返回错误信息 */
-		AdminUserCredential existCredential = this.retrieveAdminUserCredentialInfo(credential.getAdminUser().getAtid());
+		/* 判断最终用户是否已设置过密码，有则返回错误信息 */
+		EndUserCredential existCredential = this.retrieveEndUserCredentialInfo(credential.getEndUser().getAtid());
 		if (existCredential.isSuccessful()) {
 			result.setSuccessful(false);
-			result.addMessage("该服务人员已经设置过统一登录密码");
+			result.addMessage("该最终用户已经设置过统一登录密码");
 			return result;
 		}
 		
-		/* 判断指定的服务人员是否存在 */
-		AdminUserInfo existAdminUser = this.getAdminUserInfoBizService().get(credential.getAdminUser().getAtid());
-		if (!existAdminUser.isSuccessful() || EEBeanUtils.isNULL(existAdminUser.getAtid())) {
+		/* 判断指定的最终用户是否存在 */
+		EndUserInfo existEndUser = this.getEndUserInfoBizService().get(credential.getEndUser().getAtid());
+		if (!existEndUser.isSuccessful() || EEBeanUtils.isNULL(existEndUser.getAtid())) {
 			result.setSuccessful(false);
-			result.addMessage("未找到指定要设置登录密码对应的服务人员");
+			result.addMessage("未找到指定要设置登录密码对应的最终用户");
 			return result;
 		}
 		
@@ -75,57 +75,46 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 		}
 		
 		/* 保存到数据库，再根据保存结果写缓存或返回错误信息 */
-		AdminUserCredential savedResult = super.save(credential);
+		EndUserCredential savedResult = super.save(credential);
 		result.setSuccessful(savedResult.isSuccessful());
 		if (savedResult.isSuccessful())
-			SynAdminUserCredential2Redis.syn(getRedisClient(), savedResult);
+			SynEndUserCredential2Redis.syn(getRedisClient(), savedResult);
 		else
 			result.addMessage(savedResult.getStrMessage());
 		
 		return result;
 	}
-	
-	/**
-	 * 主流程：
-	 * -> 参数检查
-	 * -> 判断服务人员是否已设置过密码，没有则返回错误信息
-	 * -> 判断指定的服务人员是否存在
-	 * -> 判断原有密码是否能匹配，不对则返回错误信息
-	 * -> 新密码加密
-	 * -> 保存到数据库，再根据保存结果写缓存或返回错误信息
-	 * 2016年6月9日
-	 * @author Orion
-	 */
+
 	@Override
-	public SimpleResponse changeAdminUserLoginPassword(AdminUserCredential curCredential, String newSecretKey) {
+	public SimpleResponse changeEndUserLoginPassword(EndUserCredential curCredential, String newSecretKey) {
 		SimpleResponse result = new SimpleResponse();
 		/* 参数检查 */
 		if (curCredential==null || EEBeanUtils.isNULL(newSecretKey)) {
 			result.setSuccessful(false);
-			result.addMessage("要修改的服务人员登录密码未知("+this.getClass().getName()+")");
+			result.addMessage("要修改的最终用户登录密码未知("+this.getClass().getName()+")");
 			return result;
-		} else if (EEBeanUtils.isNULL(curCredential.getPassword()) || curCredential.getAdminUser()==null || EEBeanUtils.isNULL(curCredential.getAdminUser().getAtid())) {
+		} else if (EEBeanUtils.isNULL(curCredential.getPassword()) || curCredential.getEndUser()==null || EEBeanUtils.isNULL(curCredential.getEndUser().getAtid())) {
 			result.setSuccessful(false);
-			result.addMessage("要修改的服务人员登录秘钥参数不全，ADMIN USER标识、当前登录密码均不可为空("+this.getClass().getName()+")");
+			result.addMessage("要修改的最终用户登录秘钥参数不全，END USER标识、当前登录密码均不可为空("+this.getClass().getName()+")");
 		}
 		if (!result.isSuccessful())
 			return result;
 		
-		/* 判断服务人员是否已设置过密码，没有则返回错误信息 */
-		AdminUserCredential existCredential = this.retrieveAdminUserCredentialInfo(curCredential.getAdminUser().getAtid());
+		/* 判断最终用户是否已设置过密码，没有则返回错误信息 */
+		EndUserCredential existCredential = this.retrieveEndUserCredentialInfo(curCredential.getEndUser().getAtid());
 		if (!existCredential.isSuccessful()) {
 			result.setSuccessful(false);
 			result.addMessage(existCredential.getStrMessage());
 			return result;
 		}
 		
-		/* 判断指定的服务人员是否存在 */
-		AdminUserInfo existAdminUser = curCredential.getAdminUser();
-		if (EEBeanUtils.isNULL(existAdminUser.getName()) && existAdminUser.getMobile()==null) {//尝试从密码对象中判断人员姓名或手机是否已存在
-			existAdminUser = this.getAdminUserInfoBizService().get(curCredential.getAdminUser().getAtid());
-			if (!existAdminUser.isSuccessful() || EEBeanUtils.isNULL(existAdminUser.getAtid())) {
+		/* 判断指定的最终用户是否存在 */
+		EndUserInfo existEndUser = curCredential.getEndUser();
+		if (EEBeanUtils.isNULL(existEndUser.getName()) && existEndUser.getMobile()==null) {//尝试从密码对象中判断人员姓名或手机是否已存在
+			existEndUser = this.getEndUserInfoBizService().get(curCredential.getEndUser().getAtid());
+			if (!existEndUser.isSuccessful() || EEBeanUtils.isNULL(existEndUser.getAtid())) {
 				result.setSuccessful(false);
-				result.addMessage("未找到指定要设置登录密码对应的服务人员");
+				result.addMessage("未找到指定要设置登录密码对应的最终用户");
 				return result;
 			}
 		}
@@ -161,10 +150,10 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 		}
 		
 		/* 保存到数据库，再根据保存结果写缓存或返回错误信息 */
-		AdminUserCredential savedResult = super.save(existCredential);
+		EndUserCredential savedResult = super.save(existCredential);
 		result.setSuccessful(savedResult.isSuccessful());
 		if (savedResult.isSuccessful())
-			SynAdminUserCredential2Redis.syn(getRedisClient(), savedResult);
+			SynEndUserCredential2Redis.syn(getRedisClient(), savedResult);
 		else
 			result.addMessage(savedResult.getStrMessage());
 		
@@ -172,7 +161,7 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	}
 
 	@Override
-	public SimpleResponse resetAdminUserLoginPassword(String adminUserId) {
+	public SimpleResponse resetEndUserLoginPassword(String endUserId) {
 		SimpleResponse result = new SimpleResponse();
 		result.setSuccessful(false);
 		result.addMessage("该服务暂未开放");
@@ -180,19 +169,19 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	}
 	
 	@Override
-	public AdminUserCredential retrieveAdminUserCredentialInfo (String adminUserId) {
-		AdminUserCredential result = new AdminUserCredential();
+	public EndUserCredential retrieveEndUserCredentialInfo (String endUserId) {
+		EndUserCredential result = new EndUserCredential();
 		/* 参数检查 */
-		if (EEBeanUtils.isNULL(adminUserId)) {
+		if (EEBeanUtils.isNULL(endUserId)) {
 			result.setSuccessful(false);
-			result.addMessage("服务人员标识未知");
+			result.addMessage("最终用户标识未知");
 			return result;
 		}
 		
 		/* 从数据库取秘钥对象 */
 		QueryCondition query = new QueryCondition();
-		query.addCondition(new ConditionItem("adminUser.atid",RangeType.EQUAL,adminUserId,null));
-		SimpleResultSet<AdminUserCredential> existCredential = super.query(query, AdminUserCredential.class);
+		query.addCondition(new ConditionItem("endUser.atid",RangeType.EQUAL,endUserId,null));
+		SimpleResultSet<EndUserCredential> existCredential = super.query(query, EndUserCredential.class);
 		if (!existCredential.isSuccessful()) {
 			result.setSuccessful(false);
 			result.addMessage(existCredential.getStrMessage());
@@ -204,50 +193,50 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 			result = existCredential.getResultSet().get(0);
 		} else {
 			result.setSuccessful(false);
-			result.addMessage("匹配到该服务人员设置了个"+existCredential.getResultSet().size()+"统一登录密码");
+			result.addMessage("匹配到该最终用户设置了个"+existCredential.getResultSet().size()+"统一登录密码");
 		}
 		return result;
 	}
 
 	@Override
-	public StringResponse retrieveAdminUserSecretKey(String adminUserId) {
+	public StringResponse retrieveEndUserSecretKey(String endUserId) {
 		StringResponse result = new StringResponse();
 		/* 参数检查 */
-		if (EEBeanUtils.isNULL(adminUserId)) {
+		if (EEBeanUtils.isNULL(endUserId)) {
 			result.setSuccessful(false);
-			result.addMessage("未指定服务人员标识");
+			result.addMessage("未指定最终用户标识");
 		}
 		
 		/* 从缓存取数据 */
-		String ciphertext = SynAdminUserCredential2Redis.get(getRedisClient(), adminUserId);
+		String ciphertext = SynEndUserCredential2Redis.get(getRedisClient(), endUserId);
 		if (!EEBeanUtils.isNULL(ciphertext))
 			result.setResult(ciphertext);
 		
 		/* 从数据库取数据 */
 		if (EEBeanUtils.isNULL(result.getResult())) {
-			result.setResult(this.retrieveAdminUserCredentialInfo(adminUserId).getPassword());
+			result.setResult(this.retrieveEndUserCredentialInfo(endUserId).getPassword());
 		}
 		
 		/* 从数据库也取不到数据 */
 		if (EEBeanUtils.isNULL(result.getResult())) {
 			result.setSuccessful(false);
-			result.addMessage("未找到指定服务人员的秘钥（密文）");
+			result.addMessage("未找到指定最终用户的秘钥（密文）");
 		}
 		
 		return result;
 	}
 
 	@Override
-	public StringResponse retrieveAdminUserSecretKey(String adminUserId, RSADecrypt decrypt) {
+	public StringResponse retrieveEndUserSecretKey(String endUserId, RSADecrypt decrypt) {
 		StringResponse result = new StringResponse();
 		/* 参数检查 */
-		if (EEBeanUtils.isNULL(adminUserId) || decrypt==null) {
+		if (EEBeanUtils.isNULL(endUserId) || decrypt==null) {
 			result.setSuccessful(false);
-			result.addMessage("未指定服务人员标识或解密私钥未知");
+			result.addMessage("未指定最终用户标识或解密私钥未知");
 		}
 		
 		/* 取秘钥密文 */
-		StringResponse ciphertextResponse = this.retrieveAdminUserSecretKey(adminUserId);
+		StringResponse ciphertextResponse = this.retrieveEndUserSecretKey(endUserId);
 		if (!ciphertextResponse.isSuccessful())
 			return ciphertextResponse;
 		
@@ -272,7 +261,7 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	@Override
 	public Class<?> getPojoCLS() {
 		// TODO Auto-generated method stub
-		return AdminUserCredential.class;
+		return EndUserCredential.class;
 	}
 
 	/**
@@ -304,17 +293,17 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	}
 
 	/**
-	 * @return the 服务人员信息服务
+	 * @return the 数据存储解密私钥
 	 */
-	public AdminUserInfoBizService getAdminUserInfoBizService() {
-		return adminUserInfoBizService;
+	public RSADecrypt getStorageRSADecrypt() {
+		return StorageRSADecrypt;
 	}
 
 	/**
-	 * @param adminUserInfoBizService the 服务人员信息服务 to set
+	 * @param storageRSADecrypt the 数据存储解密私钥 to set
 	 */
-	public void setAdminUserInfoBizService(AdminUserInfoBizService adminUserInfoBizService) {
-		this.adminUserInfoBizService = adminUserInfoBizService;
+	public void setStorageRSADecrypt(RSADecrypt storageRSADecrypt) {
+		StorageRSADecrypt = storageRSADecrypt;
 	}
 
 	/**
@@ -332,16 +321,16 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	}
 
 	/**
-	 * @return the 数据存储解密私钥
+	 * @return the 最终用户信息服务
 	 */
-	public RSADecrypt getStorageRSADecrypt() {
-		return StorageRSADecrypt;
+	public EndUserInfoBizService getEndUserInfoBizService() {
+		return endUserInfoBizService;
 	}
 
 	/**
-	 * @param storageRSADecrypt the 数据存储解密私钥 to set
+	 * @param endUserInfoBizService the 最终用户信息服务 to set
 	 */
-	public void setStorageRSADecrypt(RSADecrypt storageRSADecrypt) {
-		StorageRSADecrypt = storageRSADecrypt;
+	public void setEndUserInfoBizService(EndUserInfoBizService endUserInfoBizService) {
+		this.endUserInfoBizService = endUserInfoBizService;
 	}
 }

@@ -37,7 +37,7 @@
 				<version>2.9</version>
 				<configuration>
 					<includes>
-						<include> **/AdminUserCredentialTester.java</include>
+						<include> **/EndUserCredentialTester.java</include>
 						<!-- <include> **/*Tester.java</include>
 						<include> **/Test*.java</include> -->
 					</includes>

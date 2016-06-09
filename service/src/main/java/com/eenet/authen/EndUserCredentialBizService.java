@@ -12,8 +12,7 @@ import com.eenet.util.cryptography.RSADecrypt;
 public interface EndUserCredentialBizService {
 	/**
 	 * 初始化用户登录密码
-	 * @param mainAccount
-	 * @param credential 
+	 * @param credential 登录密码属性必须是：带时间戳加密的形式
 	 * @return
 	 * 2016年3月31日
 	 * @author Orion
@@ -22,9 +21,8 @@ public interface EndUserCredentialBizService {
 	
 	/**
 	 * 修改用户主登录密码
-	 * @param mainAccount
-	 * @param curCredential
-	 * @param newSecretKey
+	 * @param curCredential 登录密码属性必须是：带时间戳加密的形式
+	 * @param newSecretKey 新密码：明文直接加密的形式（不带时间戳）
 	 * @return
 	 * 2016年3月31日
 	 * @author Orion
@@ -40,6 +38,14 @@ public interface EndUserCredentialBizService {
 	 */
 	public SimpleResponse resetEndUserLoginPassword(String endUserId);
 	
+	/**
+	 * 获得最终用户秘钥信息
+	 * @param endUserId 最终用户标识
+	 * @return
+	 * 2016年6月9日
+	 * @author Orion
+	 */
+	public EndUserCredential retrieveEndUserCredentialInfo (String endUserId);
 	/**
 	 * 获得用户登录密码（密文）
 	 * @param endUserId 用户标识
@@ -57,5 +63,5 @@ public interface EndUserCredentialBizService {
 	 * 2016年4月7日
 	 * @author Orion
 	 */
-	public StringResponse retrieveEndUserSecretKey(String endUserId, RSADecrypt StorageRSAEncrypt);
+	public StringResponse retrieveEndUserSecretKey(String endUserId, RSADecrypt decrypt);
 }

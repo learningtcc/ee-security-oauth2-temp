@@ -33,4 +33,13 @@
 		<property name="TransferRSADecrypt" ref="TransferRSADecrypt"/>
 		<property name="adminUserInfoBizService" ref="AdminUserInfoBizImpl"/>
 	</bean>
+	<!-- 最终用户登录秘钥服务 -->
+	<bean id="EndUserCredentialBizImpl" class="com.eenet.authen.bizimpl.EndUserCredentialBizImpl">
+		<property name="baseDAOService" ref="GenericDAO" />
+		<property name="RedisClient" ref="RedisClient"/>
+		<property name="StorageRSAEncrypt" ref="StorageRSAEncrypt"/>
+		<property name="StorageRSADecrypt" ref="StorageRSADecrypt"/>
+		<property name="TransferRSADecrypt" ref="TransferRSADecrypt"/>
+		<property name="endUserInfoBizService" ref="EndUserInfoBizImpl"/>
+	</bean>
 </beans>

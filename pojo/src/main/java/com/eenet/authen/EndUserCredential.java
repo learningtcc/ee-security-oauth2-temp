@@ -1,6 +1,8 @@
 package com.eenet.authen;
 
 import com.eenet.base.BaseEntity;
+import com.eenet.common.BackupDeletedData;
+import com.eenet.common.BackupUpdatedData;
 import com.eenet.user.EndUserInfo;
 
 /**
@@ -8,7 +10,7 @@ import com.eenet.user.EndUserInfo;
  * @author Orion
  *
  */
-public class EndUserCredential extends BaseEntity {
+public class EndUserCredential extends BaseEntity implements BackupDeletedData,BackupUpdatedData {
 	private static final long serialVersionUID = 1650933617094538884L;
 	private EndUserInfo endUser;//最终用户信息
 	private String password;//用户登录密码（区别于账号登录密码）

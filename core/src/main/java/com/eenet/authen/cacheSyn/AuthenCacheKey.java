@@ -27,6 +27,11 @@ public final class AuthenCacheKey {
 	 * redisKey:ENDUSER_LOGIN_ACCOUNT, mapKey:登录账号，value:最终用户对象(@see com.eenet.authen.EndUserLoginAccount)
 	 */
 	public final static String ENDUSER_LOGIN_ACCOUNT = "ENDUSER_LOGIN_ACCOUNT";
+	/**
+	 * 最终用户登录密码
+	 * redisKey:ENDUSER_CREDENTIAL, mapKey:对应最终用户ID，value:最终用户登录密码(String)
+	 */
+	public final static String ENDUSER_CREDENTIAL = "ENDUSER_CREDENTIAL";
 	
 	
 	private AuthenCacheKey() {}

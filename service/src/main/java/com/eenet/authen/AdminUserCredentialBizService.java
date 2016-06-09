@@ -31,7 +31,7 @@ public interface AdminUserCredentialBizService {
 	
 	/**
 	 * 重置服务人员登录密码（适合忘记密码）
-	 * @param endUserId 用户标识
+	 * @param adminUserId 服务人员标识
 	 * @return
 	 * 2016年3月31日
 	 * @author Orion

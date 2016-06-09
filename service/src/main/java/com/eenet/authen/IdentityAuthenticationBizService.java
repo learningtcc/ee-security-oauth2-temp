@@ -21,12 +21,21 @@ public interface IdentityAuthenticationBizService {
 	
 	/**
 	 * 最终用户认证
-	 * 同时认证用户身份和业务应用系统身份
+	 * 同时认证最终用户身份和业务应用系统身份
 	 * @param request
 	 * @return
 	 */
 	public UserAccessTokenAuthenResponse endUserAuthen(UserAccessTokenAuthenRequest request);
 	
+	/**
+	 * 服务人员认证
+	 * 同时认证服务人员身份和业务应用系统身份
+	 * @param request
+	 * @return
+	 * 2016年6月9日
+	 * @author Orion
+	 */
+	public UserAccessTokenAuthenResponse adminUserAuthen(UserAccessTokenAuthenRequest request);
 	/**
 	 * 检查服务提供者状态
 	 * @return
