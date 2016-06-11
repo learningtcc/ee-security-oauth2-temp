@@ -14,7 +14,7 @@ public interface IdentityAuthenticationBizService {
 	
 	/**
 	 * 业务应用认证
-	 * @param request
+	 * @param request 应用接入秘钥属性，以带时间戳形式加密
 	 * @return
 	 */
 	public BooleanResponse appAuthen(AppAuthenRequest request);
@@ -22,7 +22,7 @@ public interface IdentityAuthenticationBizService {
 	/**
 	 * 最终用户认证
 	 * 同时认证最终用户身份和业务应用系统身份
-	 * @param request
+	 * @param request 应用接入秘钥属性，以带时间戳形式加密
 	 * @return
 	 */
 	public UserAccessTokenAuthenResponse endUserAuthen(UserAccessTokenAuthenRequest request);
@@ -30,7 +30,7 @@ public interface IdentityAuthenticationBizService {
 	/**
 	 * 服务人员认证
 	 * 同时认证服务人员身份和业务应用系统身份
-	 * @param request
+	 * @param request 应用接入秘钥属性，以带时间戳形式加密
 	 * @return
 	 * 2016年6月9日
 	 * @author Orion

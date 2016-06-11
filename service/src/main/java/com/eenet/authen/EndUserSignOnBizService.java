@@ -14,7 +14,7 @@ public interface EndUserSignOnBizService {
 	 * @param appId 应用标识
 	 * @param redirectURI 跳转地址（非web系统可空）
 	 * @param loginAccount 登录账号
-	 * @param password 最终用户登录密码（明文）
+	 * @param password 最终用户登录密码，带时间戳加密的形式。可以是最终用户统一密码，也可以是账单账号私有密码
 	 * @return 授权码
 	 */
 	public SignOnGrant getSignOnGrant(String appId, String redirectURI, String loginAccount, String password);
@@ -24,7 +24,7 @@ public interface EndUserSignOnBizService {
 	 * 业务规则：web应用5分钟内、native应用7天内无操作则accessToken失效，通过refreshToken重新获取
 	 * 适用场景：只要30天内有访问系统，则可以持续保持自动登录
 	 * @param appId 业务应用标识
-	 * @param secretKey 业务应用秘钥（明文）
+	 * @param secretKey 业务应用秘钥，带时间戳加密的形式
 	 * @param grantCode 访问授权码
 	 * @return
 	 * 2016年4月15日
@@ -38,7 +38,7 @@ public interface EndUserSignOnBizService {
 	 * 适用场景：系统间跳转
 	 * @param fromAppId 来源业务应用标识
 	 * @param toAppId 目标业务应用标识
-	 * @param secretKey 目标业务应用秘钥（明文）
+	 * @param secretKey 目标业务应用秘钥，带时间戳加密的形式
 	 * @param endUserId 来源业务应用登录用户的id
 	 * @param refreshToken 来源业务应用登录用户的refreshToken
 	 * @return
@@ -51,7 +51,7 @@ public interface EndUserSignOnBizService {
 	 * 当refreshToken作重新获取refreshToken时，一次性失效并重新颁发
 	 * 当refreshToken用于系统跳转时，可多次使用
 	 * @param appId 业务应用标识
-	 * @param secretKey 业务应用秘钥（明文）
+	 * @param secretKey 业务应用秘钥，带时间戳加密的形式
 	 * @param refreshToken
 	 * @return
 	 * 2016年4月21日

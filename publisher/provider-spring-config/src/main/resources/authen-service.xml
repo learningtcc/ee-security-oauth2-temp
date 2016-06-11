@@ -42,4 +42,17 @@
 		<property name="TransferRSADecrypt" ref="TransferRSADecrypt"/>
 		<property name="endUserInfoBizService" ref="EndUserInfoBizImpl"/>
 	</bean>
+	
+	<!-- 服务人员登录服务 -->
+	<bean id="AdminUserSignOnBizImpl" class="com.eenet.authen.bizimpl.AdminUserSignOnBizImpl">
+		<property name="RedisClient" ref="RedisClient"/>
+		<property name="StorageRSADecrypt" ref="StorageRSADecrypt"/>
+		<property name="TransferRSADecrypt" ref="TransferRSADecrypt"/>
+		<property name="businessAppBizService" ref="BusinessAppBizImpl"/>
+		<property name="adminUserCredentialBizService" ref="AdminUserCredentialBizImpl"/>
+		<property name="adminUserLoginAccountBizService" ref="AdminUserLoginAccountBizImpl"/>
+		<property name="adminUserInfoBizService" ref="AdminUserInfoBizImpl"/>
+		<property name="signOnUtil" ref="SignOnUtil"/>
+		<property name="identityUtil" ref="IdentityUtil"/>
+	</bean>
 </beans>

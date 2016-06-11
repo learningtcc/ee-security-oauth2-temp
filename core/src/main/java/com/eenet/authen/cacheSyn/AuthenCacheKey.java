@@ -34,5 +34,37 @@ public final class AuthenCacheKey {
 	public final static String ENDUSER_CREDENTIAL = "ENDUSER_CREDENTIAL";
 	
 	
+	/**
+	 * 服务人员登录授权码前缀
+	 * key: ADMINUSER_GRANTCODE:[grant code]:[appid], value: 服务人员标识(String)
+	 */
+	public final static String ADMINUSER_GRANTCODE_PREFIX = "ADMINUSER_GRANTCODE";
+	/**
+	 * 服务人员访问令牌前缀
+	 * key: ADMINUSER_ACCESSTOKEN:[access token]:[appid], value: 服务人员标识(String)
+	 */
+	public final static String ADMINUSER_ACCESSTOKEN_PREFIX = "ADMINUSER_ACCESSTOKEN";
+	/**
+	 * 服务人员刷新令牌前缀
+	 * key: ADMINUSER_REFRESHTOKEN:[refresh token]:[appid], value: 服务人员标识(String)
+	 */
+	public final static String ADMINUSER_REFRESHTOKEN_PREFIX = "ADMINUSER_REFRESHTOKEN";
+	
+	/**
+	 * 最终用户登录授权码前缀
+	 * key: ENDUSER_GRANTCODE:[grant code]:[appid], value: 最终用户标识(String)
+	 */
+	public final static String ENDUSER_GRANTCODE_PREFIX = "ENDUSER_GRANTCODE";
+	/**
+	 * 最终用户访问令牌前缀
+	 * key: ENDUSER_ACCESSTOKEN:[access token]:[appid], value: 服务人员标识(String)
+	 */
+	public final static String ENDUSER_ACCESSTOKEN_PREFIX = "ENDUSER_ACCESSTOKEN";
+	/**
+	 * 最终用户刷新令牌前缀
+	 * key: ENDUSER_REFRESHTOKEN:[refresh token]:[appid], value: 服务人员标识(String)
+	 */
+	public final static String ENDUSER_REFRESHTOKEN_PREFIX = "ENDUSER_REFRESHTOKEN";
+	
 	private AuthenCacheKey() {}
 }
