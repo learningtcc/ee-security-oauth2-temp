@@ -10,11 +10,14 @@ import com.eenet.authen.EndUserCredentialBizService;
 import com.eenet.authen.EndUserLoginAccount;
 import com.eenet.authen.EndUserLoginAccountBizService;
 import com.eenet.authen.EndUserSignOnBizService;
+import com.eenet.authen.IdentityAuthenticationBizService;
 import com.eenet.authen.BusinessApp;
 import com.eenet.authen.BusinessAppBizService;
 import com.eenet.authen.BusinessAppType;
 import com.eenet.authen.LoginAccountType;
 import com.eenet.authen.SignOnGrant;
+import com.eenet.authen.request.UserAccessTokenAuthenRequest;
+import com.eenet.authen.response.UserAccessTokenAuthenResponse;
 import com.eenet.base.SimpleResponse;
 import com.eenet.test.env.SpringEnvironment;
 import com.eenet.user.EndUserInfo;
@@ -29,12 +32,12 @@ public class EndUserSignOnTester extends SpringEnvironment {
 	private EndUserLoginAccountBizService accountService = (EndUserLoginAccountBizService)super.getContext().getBean("EndUserLoginAccountBizImpl");
 	private EndUserCredentialBizService credentialService = (EndUserCredentialBizService)super.getContext().getBean("EndUserCredentialBizImpl");
 	private EndUserSignOnBizService signService = (EndUserSignOnBizService)super.getContext().getBean("EndUserSignOnBizImpl");
+	private IdentityAuthenticationBizService identityService = (IdentityAuthenticationBizService)super.getContext().getBean("IdentityAuthenticationBizImpl");
 	private RSAEncrypt encrypt = (RSAEncrypt)super.getContext().getBean("TransferRSAEncrypt");
 	
 	private BusinessApp app;
 	private EndUserInfo user;
 	private EndUserLoginAccount account;
-	private EndUserCredential credential;
 	private String userPassword = "myPassword";
 	private String appPassword = "999Aa$";
 	
@@ -45,8 +48,9 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			if (!this.preNormalFlow())
 				return;
 			
-			System.out.println("appid : "+app.getAppId());
-			System.out.println("RedirectURIPrefix : "+app.getRedirectURIPrefix());
+			/* ●●●●●●●●●●●●●●●●●●●●●●●●●●登录●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●● */
+			
+			/* 获得登录授权码 */
 			SignOnGrant getSignOnGrant = 
 					signService.getSignOnGrant(app.getAppId(), app.getRedirectURIPrefix(), account.getLoginAccount(), RSAUtil.encryptWithTimeMillis(encrypt, userPassword));
 			if (!getSignOnGrant.isSuccessful()){
@@ -55,6 +59,7 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			}
 			System.out.println("getSignOnGrant: "+getSignOnGrant.getGrantCode());
 			
+			/* 获得访问令牌 */
 			AccessToken getAccessToken = 
 					signService.getAccessToken(app.getAppId(), RSAUtil.encryptWithTimeMillis(encrypt, appPassword), getSignOnGrant.getGrantCode());
 			if (!getAccessToken.isSuccessful()){
@@ -65,6 +70,7 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			System.out.println("getAccessToken RefreshToken: "+getAccessToken.getRefreshToken());
 			System.out.println("getAccessToken UserInfo.Name: "+getAccessToken.getUserInfo().getName());
 			
+			/* 刷新访问令牌 */
 			AccessToken refreshAccessToken = 
 					signService.refreshAccessToken(app.getAppId(), RSAUtil.encryptWithTimeMillis(encrypt, appPassword), getAccessToken.getRefreshToken(), getAccessToken.getUserInfo().getAtid());
 			if (!refreshAccessToken.isSuccessful()){
@@ -74,6 +80,22 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			System.out.println("refreshAccessToken AccessToken: "+refreshAccessToken.getAccessToken());
 			System.out.println("refreshAccessToken RefreshToken: "+refreshAccessToken.getRefreshToken());
 			
+			/* ●●●●●●●●●●●●●●●●●●●●●●●●●●认证●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●● */
+			
+			/* 应用系统认证 */
+			//其他用例已测
+			
+			/* 最终用户令牌认证 */
+			UserAccessTokenAuthenRequest tokenAuthenRequest = new UserAccessTokenAuthenRequest();
+			tokenAuthenRequest.setAppId(app.getAppId());
+			tokenAuthenRequest.setSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
+			tokenAuthenRequest.setUserId(getAccessToken.getUserInfo().getAtid());
+			tokenAuthenRequest.setUserAccessToken(refreshAccessToken.getAccessToken());
+			UserAccessTokenAuthenResponse endUserAuthenResult = 
+					identityService.endUserAuthen(tokenAuthenRequest);
+			System.out.println("endUserAuthenResult successful: " + endUserAuthenResult.isSuccessful());
+			System.out.println("endUserAuthenResult isAppIdentityConfirm: " + endUserAuthenResult.isAppIdentityConfirm());
+			System.out.println("endUserAuthenResult isUserIdentityConfirm: " + endUserAuthenResult.isUserIdentityConfirm());
 		} finally {
 			this.afterNormalFlow();
 		}
@@ -127,7 +149,6 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			System.out.println(initResult.getStrMessage());
 			return false;
 		}
-		this.credential = credential;
 		
 		return true;
 	}
