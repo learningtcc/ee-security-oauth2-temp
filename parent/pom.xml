@@ -7,6 +7,7 @@
 	<packaging>pom</packaging>
 
 	<profiles>
+		<!-- 开发环境 -->
 		<profile>
 			<id>DEV-ENV-ORACLE</id>
 			<properties>
@@ -42,8 +43,26 @@
 				<dubbo.port>20880</dubbo.port>
 			</properties>
 		</profile>
+		
+		<!-- 测试环境 -->
 		<profile>
-			<id>TEST-ENV</id>
+			<id>TEST-ENV-ORACLE</id>
+			<properties>
+				<!-- oracle配置 -->
+				<db.driverClassName>oracle.jdbc.driver.OracleDriver</db.driverClassName>
+				<db.type>oracle</db.type>
+				<connection.url><![CDATA[jdbc:oracle:thin:@172.16.146.66:1521:gzdec]]></connection.url>
+				<connection.user>cm_user_manager</connection.user>
+				<connection.password>password</connection.password>
+				<!-- Redis配置 --><!-- redis://:[PASSWORD]@[IP]:[PORT]/[DB] -->
+				<redis.server.1><![CDATA[redis://:REDIS@172.16.165.222:6379]]></redis.server.1>
+				<!-- zookeeper配置 -->
+				<zookeeper.address>172.16.165.223:2181</zookeeper.address>
+				<dubbo.port>20880</dubbo.port>
+			</properties>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
 		</profile>
 	</profiles>
 

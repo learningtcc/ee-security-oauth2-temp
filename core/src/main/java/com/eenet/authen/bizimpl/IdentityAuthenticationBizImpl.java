@@ -32,7 +32,7 @@ public class IdentityAuthenticationBizImpl implements IdentityAuthenticationBizS
 		SimpleResponse result = new SimpleResponse();
 		result.setSuccessful(false);
 		/* 参数检查 */
-		if (request==null || EEBeanUtils.isNULL(request.getAppId()) || EEBeanUtils.isNULL(request.getSecretKey())) {
+		if (request==null || EEBeanUtils.isNULL(request.getAppId()) || EEBeanUtils.isNULL(request.getAppSecretKey())) {
 			result.addMessage("参数不完整("+this.getClass().getName()+"("+this.getClass().getName()+")");
 			return result;
 		}
@@ -40,7 +40,7 @@ public class IdentityAuthenticationBizImpl implements IdentityAuthenticationBizS
 		/* 计算传入的app密码明文 */
 		String secretKeyPlaintext = null;
 		try {
-			secretKeyPlaintext = RSAUtil.decryptWithTimeMillis(getTransferRSADecrypt(), request.getSecretKey(), 2);
+			secretKeyPlaintext = RSAUtil.decryptWithTimeMillis(getTransferRSADecrypt(), request.getAppSecretKey(), 2);
 			if (EEBeanUtils.isNULL(secretKeyPlaintext)) {
 				result.addMessage("无法解密提供的业务系统秘钥("+this.getClass().getName()+"("+this.getClass().getName()+")");
 				return result;
@@ -80,7 +80,7 @@ public class IdentityAuthenticationBizImpl implements IdentityAuthenticationBizS
 		UserAccessTokenAuthenResponse result = new UserAccessTokenAuthenResponse();
 		result.setSuccessful(false);
 		/* 参数检查 */
-		if (request == null || EEBeanUtils.isNULL(request.getAppId()) || EEBeanUtils.isNULL(request.getSecretKey())
+		if (request == null || EEBeanUtils.isNULL(request.getAppId()) || EEBeanUtils.isNULL(request.getAppSecretKey())
 				|| EEBeanUtils.isNULL(request.getUserId()) || EEBeanUtils.isNULL(request.getUserAccessToken())) {
 			result.addMessage("参数不完整("+this.getClass().getName()+"("+this.getClass().getName()+")");
 			return result;

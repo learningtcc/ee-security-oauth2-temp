@@ -4,69 +4,57 @@ package com.eenet.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.APIRequestIdentity;
-import com.eenet.authen.SignOnController;
+import com.eenet.authen.IdentityAuthenticationBizService;
+import com.eenet.authen.request.AppAuthenRequest;
+import com.eenet.authen.response.UserAccessTokenAuthenResponse;
 import com.eenet.base.SimpleResponse;
 import com.eenet.util.EEBeanUtils;
-import com.eenet.util.cryptography.RSADecrypt;
 
 @Controller
 public class EndUserController {
 	@Autowired
-	private EndUserInfoBizService EndUserInfoBizService;
+	private EndUserInfoBizService endUserInfoBizService;
 	@Autowired
-	private RSADecrypt transferRSADecrypt;
+	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
 	@RequestMapping(value = "/getEndUser", produces = {"application/json;charset=UTF-8"})// , method = RequestMethod.GET
 	@ResponseBody
 	public String getEndUser(APIRequestIdentity identity, String getEndUserId) {
 		SimpleResponse response = new SimpleResponse();
-		response.setSuccessful(true);
-		/*
-		 * 临时检查身份
-		 */
-		//参数完整性检测
-		if (EEBeanUtils.isNULL(identity.getAppId()) || EEBeanUtils.isNULL(identity.getAppSecretKey()) || EEBeanUtils.isNULL(getEndUserId)) {
-			response.setSuccessful(false);
-			response.addMessage("未提供应用标识、应用秘钥或要取得用户的ID");
+		response.setSuccessful(false);
+		
+		/* 用户类型检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		} else if (identity.getUserType().equals("sysUser") || identity.getUserType().equals("anonymous")) {
+			response.addMessage(identity.getUserType()+"类型的用户不可读取最终用户个人信息");
 			return EEBeanUtils.object2Json(response);
 		}
-		System.out.println("密文： "+identity.getAppSecretKey());
-		System.out.println("明文： "+SignOnController.getSecretKey(transferRSADecrypt, identity.getAppSecretKey()));
-		//app接入身份检测
-		if (APIRequestIdentity.APP_ID.equals(identity.getAppId())) {
-			if (!APIRequestIdentity.APP_PASSWORD.equals(SignOnController.getSecretKey(transferRSADecrypt, identity.getAppSecretKey()))) {
-				response.setSuccessful(false);
-				response.addMessage("应用标识或应用秘钥有误");
-				return EEBeanUtils.object2Json(response);
-			}
-		} else if (APIRequestIdentity.APP_ID2.equals(identity.getAppId())) {
-			if (!APIRequestIdentity.APP_PASSWORD2.equals(SignOnController.getSecretKey(transferRSADecrypt, identity.getAppSecretKey()))) {
-				response.setSuccessful(false);
-				response.addMessage("应用标识或应用秘钥有误");
-				return EEBeanUtils.object2Json(response);
-			}
+		
+		/* 根据用户类型验证身份 */
+		UserAccessTokenAuthenResponse tokenAuthen = null;
+		if (identity.getUserType().equals("endUser")) {
+			tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+		} else if (identity.getUserType().equals("adminUser")) {
+			tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
 		} else {
-			response.setSuccessful(false);
-			response.addMessage("应用标识或应用秘钥有误");
+			response.addMessage("未知的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		if (tokenAuthen==null || !tokenAuthen.isSuccessful()) {
+			if (tokenAuthen==null)
+				response.addMessage("验证失败，无错误信息");
+			else
+				response.addMessage(tokenAuthen.getStrMessage());
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		//用户身份检查
-		if (EEBeanUtils.isNULL(identity.getCurrentUserId()) && !"sysUser".equals(identity.getUserType())) {
-			response.setSuccessful(false);
-			response.addMessage("在当前用户未知时，只有系统用户才能读取用户资料");
-			return EEBeanUtils.object2Json(response);
-		} else if (!EEBeanUtils.isNULL(identity.getCurrentUserId()) && !APIRequestIdentity.ACCESS_TOKEN.equals(identity.getAccessToken())) {
-			response.setSuccessful(false);
-			response.addMessage("访问令牌有误");
-			return EEBeanUtils.object2Json(response);
-		}
-		
-		EndUserInfo endUser = this.EndUserInfoBizService.get(getEndUserId);
+		/* 身份验证通过 */
+		EndUserInfo endUser = this.endUserInfoBizService.get(getEndUserId);
 		return EEBeanUtils.object2Json(endUser);
 	}
 	
@@ -74,28 +62,53 @@ public class EndUserController {
 	@ResponseBody
 	public String saveEndUser(APIRequestIdentity identity, EndUserInfo endUser) {
 		SimpleResponse response = new SimpleResponse();
-		response.setSuccessful(true);
-		/*
-		 * 临时检查身份
-		 */
-		if (!APIRequestIdentity.APP_ID.equals(identity.getAppId())) {
-			response.setSuccessful(false);
-			response.addMessage("非法应用标识");
-		} else if (!"anonymous".equals(identity.getUserType())) {
-			if (!APIRequestIdentity.ACCESS_TOKEN.equals(identity.getAccessToken()) || EEBeanUtils.isNULL(identity.getCurrentUserId()) ) {
-				response.setSuccessful(false);
-				response.addMessage("当前用户不可识别或令牌有误");
-			}
-		} else if (!APIRequestIdentity.APP_PASSWORD.equals(SignOnController.getSecretKey(transferRSADecrypt, identity.getAppSecretKey()))) {
-			response.setSuccessful(false);
-			response.addMessage("应用秘钥有误");
-		}
+		response.setSuccessful(false);
 		
-		if (!response.isSuccessful()){
+		/* 用户类型检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		} else if (identity.getUserType().equals("sysUser")) {
+			response.addMessage(identity.getUserType()+"类型的用户不可创建或修改最终用户个人信息");
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		EndUserInfo result = this.EndUserInfoBizService.save(endUser);
+		/* 用户类型可进行操作判断 */
+		boolean opCheck = false;
+		if (identity.getUserType().equals("endUser") && !EEBeanUtils.isNULL(identity.getUserId())
+				&& identity.getUserId().equals(endUser.getAtid())) {// endUser可修改自己的信息
+			opCheck = true;
+		} else if (identity.getUserType().equals("anonymous") && EEBeanUtils.isNULL(identity.getUserId())) {//anonymous可新增数据
+			opCheck = true;
+		}
+		if (!opCheck) {
+			response.addMessage("不允许的操作");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 根据用户类型验证身份 */
+		if (identity.getUserType().equals("anonymous")) {
+			AppAuthenRequest request = new AppAuthenRequest();
+			request.setAppId(identity.getAppId());
+			request.setAppSecretKey(identity.getAppSecretKey());
+			SimpleResponse appAuthen = identityAuthenticationBizService.appAuthen(request);
+			if (!appAuthen.isSuccessful()) {
+				response.addMessage(appAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else if (identity.getUserType().equals("adminUser")) {
+			UserAccessTokenAuthenResponse tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+			if (!tokenAuthen.isSuccessful()) {
+				response.addMessage(tokenAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else {
+			response.addMessage("未知的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 身份验证通过 */
+		EndUserInfo result = this.endUserInfoBizService.save(endUser);
 		return EEBeanUtils.object2Json(result);
 	}
 }

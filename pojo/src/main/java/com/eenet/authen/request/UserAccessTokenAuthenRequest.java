@@ -12,7 +12,7 @@ public class UserAccessTokenAuthenRequest implements Serializable {
 	private String userId;//最终用户id/服务人员id
 	private String userAccessToken;//最终用户访问令牌/服务人员访问令牌
 	private String appId;//应用标识
-	private String secretKey;//应用接入秘钥（密文）
+	private String appSecretKey;//应用接入秘钥（密文）
 	/**
 	 * @return the 最终用户id/服务人员id
 	 */
@@ -52,14 +52,13 @@ public class UserAccessTokenAuthenRequest implements Serializable {
 	/**
 	 * @return the 应用接入秘钥（密文）
 	 */
-	public String getSecretKey() {
-		return secretKey;
+	public String getAppSecretKey() {
+		return appSecretKey;
 	}
 	/**
-	 * @param secretKey the 应用接入秘钥（密文） to set
+	 * @param appSecretKey the 应用接入秘钥（密文） to set
 	 */
-	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
+	public void setAppSecretKey(String appSecretKey) {
+		this.appSecretKey = appSecretKey;
 	}
-	
 }

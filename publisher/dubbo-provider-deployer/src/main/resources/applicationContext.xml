@@ -32,4 +32,5 @@
 	
 	<!-- 通过dubbo发布服务  -->
 	<import resource="distribution-user-service.xml"/><!-- 用户服务 -->
+	<import resource="distribution-authen-service.xml"/><!-- 认证服务 -->
 </beans>

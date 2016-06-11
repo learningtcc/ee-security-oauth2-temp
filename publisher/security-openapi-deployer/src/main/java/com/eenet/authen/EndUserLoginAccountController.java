@@ -5,42 +5,139 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.eenet.user.EndUserInfo;
+import com.eenet.authen.request.AppAuthenRequest;
+import com.eenet.authen.response.UserAccessTokenAuthenResponse;
+import com.eenet.base.SimpleResponse;
 import com.eenet.util.EEBeanUtils;
-import com.eenet.util.cryptography.RSADecrypt;
 
 @Controller
 public class EndUserLoginAccountController {
-//	@Autowired
-	private RSADecrypt transferRSADecrypt;
-//	@Autowired
-	private EndUserLoginAccountBizService EndUserLoginAccountBizService;
-//	@Autowired
-	private EndUserCredentialBizService EndUserCredentialBizService;
+	@Autowired
+	private EndUserLoginAccountBizService endUserLoginAccountBizService;
+	@Autowired
+	private EndUserCredentialBizService endUserCredentialBizService;
+	@Autowired
+	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
 	@RequestMapping(value = "/registeEndUserLoginAccount", produces = {"application/json;charset=UTF-8"})
 	@ResponseBody
 	public String registeEndUserLoginAccount(APIRequestIdentity identity, EndUserLoginAccount loginAccount) {
-		return null;
-	}
-	
-	@RequestMapping(value = "/retrieveEndUserInfo", produces = {"application/json;charset=UTF-8"})
-	@ResponseBody
-	public String retrieveEndUserInfo(APIRequestIdentity identity, String loginAccount) {
-		EndUserInfo user = new EndUserInfo();
+		//all
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
 		
-		return EEBeanUtils.object2Json(user);
+		/* 参数检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 根据用户类型验证身份 */
+		if (identity.getUserType().equals("anonymous") || identity.getUserType().equals("sysUser")) {
+			AppAuthenRequest request = new AppAuthenRequest();
+			request.setAppId(identity.getAppId());
+			request.setAppSecretKey(identity.getAppSecretKey());
+			SimpleResponse appAuthen = identityAuthenticationBizService.appAuthen(request);
+			if (!appAuthen.isSuccessful()) {
+				response.addMessage(appAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			UserAccessTokenAuthenResponse tokenAuthen = null;
+			if (identity.getUserType().equals("endUser")) {
+				tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+			} else if (identity.getUserType().equals("adminUser")) {
+				tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+			}
+			if (tokenAuthen==null || !tokenAuthen.isSuccessful()) {
+				if (tokenAuthen==null)
+					response.addMessage("验证失败，无错误信息");
+				else
+					response.addMessage(tokenAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else {
+			response.addMessage("未知的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 身份验证通过 */
+		EndUserLoginAccount result = endUserLoginAccountBizService.registeEndUserLoginAccount(loginAccount);
+		return EEBeanUtils.object2Json(result);
 	}
 	
 	@RequestMapping(value = "/initEndUserLoginPassword", produces = {"application/json;charset=UTF-8"})
 	@ResponseBody
-	public String initEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential curCredential) {
-		return null;
+	public String initEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential credential) {
+		//anonymous,adminUser,sysUser
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
+		
+		/* 用户类型检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		} else if (identity.getUserType().equals("endUser")) {
+			response.addMessage(identity.getUserType()+"类型的用户不可初始化用户登录密码");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 根据用户类型验证身份 */
+		if (identity.getUserType().equals("anonymous") || identity.getUserType().equals("sysUser")) {
+			AppAuthenRequest request = new AppAuthenRequest();
+			request.setAppId(identity.getAppId());
+			request.setAppSecretKey(identity.getAppSecretKey());
+			SimpleResponse appAuthen = identityAuthenticationBizService.appAuthen(request);
+			if (!appAuthen.isSuccessful()) {
+				response.addMessage(appAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else if (identity.getUserType().equals("adminUser")) {
+			UserAccessTokenAuthenResponse tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+			if (!tokenAuthen.isSuccessful()) {
+				response.addMessage(tokenAuthen.getStrMessage());
+				return EEBeanUtils.object2Json(response);
+			}
+		} else {
+			response.addMessage("未知的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 身份验证通过 */
+		SimpleResponse result = endUserCredentialBizService.initEndUserLoginPassword(credential);
+		return EEBeanUtils.object2Json(result);
 	}
 	
 	@RequestMapping(value = "/changeEndUserLoginPassword", produces = {"application/json;charset=UTF-8"})
 	@ResponseBody
 	public String changeEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential curCredential, String newSecretKey) {
-		return null;
+		//endUser(self)
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
+		
+		/* 用户类型检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		} else if (!identity.getUserType().equals("endUser")) {
+			response.addMessage(identity.getUserType()+"类型的用户不可修改最终用户主登录密码");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 可进行操作判断 */
+		if (EEBeanUtils.isNULL(identity.getUserId()) || !identity.getUserId().equals(curCredential.getEndUser().getAtid())) {
+			response.addMessage("只允许修改自己的密码");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 用户身份验证（令牌） */
+		UserAccessTokenAuthenResponse tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+		if (!tokenAuthen.isSuccessful()) {
+			response.addMessage(tokenAuthen.getStrMessage());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		SimpleResponse result = endUserCredentialBizService.changeEndUserLoginPassword(curCredential, newSecretKey);
+		return EEBeanUtils.object2Json(result);
 	}
 }

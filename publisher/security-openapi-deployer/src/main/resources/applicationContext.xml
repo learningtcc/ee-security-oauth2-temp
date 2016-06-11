@@ -12,8 +12,8 @@
 	<import resource="dubbo.xml"/>
 	
 	<!-- 业务模块配置 -->
-	<!-- <import resource="service/authen.xml"/> -->
 	<import resource="reference-user-service.xml"/><!-- 人员管理服务 -->
+	<import resource="reference-authen-service.xml"/><!-- 认证服务 -->
 	
 	<!-- 数据传输加密公钥 -->
 	<bean id="transferRSAEncrypt" class="com.eenet.util.cryptography.RSAEncrypt">

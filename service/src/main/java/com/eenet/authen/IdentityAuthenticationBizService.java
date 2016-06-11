@@ -3,7 +3,6 @@ package com.eenet.authen;
 import com.eenet.authen.request.AppAuthenRequest;
 import com.eenet.authen.request.UserAccessTokenAuthenRequest;
 import com.eenet.authen.response.UserAccessTokenAuthenResponse;
-import com.eenet.base.BooleanResponse;
 import com.eenet.base.SimpleResponse;
 
 /**
