@@ -1,10 +1,11 @@
 package com.eenet.authen.bizimpl;
 
 import com.eenet.authen.AccessToken;
-import com.eenet.authen.AdminUserCredentialBizService;
-import com.eenet.authen.AdminUserLoginAccountBizService;
-import com.eenet.authen.AdminUserSignOnBizService;
 import com.eenet.authen.BusinessAppBizService;
+import com.eenet.authen.EndUserCredentialBizService;
+import com.eenet.authen.EndUserLoginAccount;
+import com.eenet.authen.EndUserLoginAccountBizService;
+import com.eenet.authen.EndUserSignOnBizService;
 import com.eenet.authen.SignOnGrant;
 import com.eenet.authen.cacheSyn.AuthenCacheKey;
 import com.eenet.authen.util.IdentityUtil;
@@ -12,29 +13,30 @@ import com.eenet.authen.util.SignOnUtil;
 import com.eenet.base.SimpleResponse;
 import com.eenet.base.StringResponse;
 import com.eenet.common.cache.RedisClient;
-import com.eenet.user.AdminUserInfo;
-import com.eenet.user.AdminUserInfoBizService;
+import com.eenet.user.EndUserInfo;
+import com.eenet.user.EndUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
 import com.eenet.util.cryptography.EncryptException;
 import com.eenet.util.cryptography.RSADecrypt;
 import com.eenet.util.cryptography.RSAUtil;
 
 /**
- * 服务人员登录实现逻辑，身份认证服务见：
+ * 最终用户登录实现逻辑，身份认证服务见：
  * @see com.eenet.authen.IdentityAuthenticationBizService
  * @author Orion
- * 2016年6月10日
+ * 2016年6月11日
  */
-public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
+public class EndUserSignOnBizImpl implements EndUserSignOnBizService {
 	private RedisClient RedisClient;//Redis客户端
 	private RSADecrypt StorageRSADecrypt;//数据存储解密私钥
 	private RSADecrypt TransferRSADecrypt;//数据传输解密私钥
 	private BusinessAppBizService businessAppBizService;//业务系统服务
-	private AdminUserCredentialBizService adminUserCredentialBizService;//服务人员登录秘钥服务
-	private AdminUserLoginAccountBizService adminUserLoginAccountBizService;//服务人员登录账号服务
-	private AdminUserInfoBizService adminUserInfoBizService;//服务人员管理服务
+	private EndUserCredentialBizService endUserCredentialBizService;//最终用户登录秘钥服务
+	private EndUserLoginAccountBizService endUserLoginAccountBizService;//最终用户登录账号服务
+	private EndUserInfoBizService endUserInfoBizService;//最终用户管理服务
 	private SignOnUtil signOnUtil;//登录工具
 	private IdentityUtil identityUtil;//身份认证工具
+	
 	@Override
 	public SignOnGrant getSignOnGrant(String appId, String redirectURI, String loginAccount, String password) {
 		SignOnGrant grant = new SignOnGrant();
@@ -45,12 +47,12 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 			return grant;
 		}
 		
-		/* 计算传入的服务人员登录密码明文 */
+		/* 计算传入的最终用户登录密码明文 */
 		String passwordPlaintext = null;
 		try {
 			passwordPlaintext = RSAUtil.decryptWithTimeMillis(getTransferRSADecrypt(), password, 2);
 			if (EEBeanUtils.isNULL(passwordPlaintext)) {
-				grant.addMessage("无法解密提供的服务人员登录密码("+this.getClass().getName()+")");
+				grant.addMessage("无法解密提供的最终用户登录密码("+this.getClass().getName()+")");
 				return grant;
 			}
 		} catch (EncryptException e) {
@@ -65,27 +67,36 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 			return grant;
 		}
 		
-		/* 获得服务人员个人信息及登录秘钥信息 */
-		AdminUserInfo adminUser = getAdminUserLoginAccountBizService().retrieveAdminUserInfo(loginAccount);
-		if (!adminUser.isSuccessful()) {
-			grant.addMessage(adminUser.getStrMessage());
+		/* 获得最终用户当前登录账号信息、统一登录秘钥信息 */
+		EndUserLoginAccount loginAccountInfo = 
+				getEndUserLoginAccountBizService().retrieveEndUserLoginAccountInfo(loginAccount);
+		if (!loginAccountInfo.isSuccessful()) {
+			grant.addMessage(loginAccountInfo.getStrMessage());
 			return grant;
 		}
-		StringResponse credential = getAdminUserCredentialBizService().retrieveAdminUserSecretKey(adminUser.getAtid(), getStorageRSADecrypt());
+		EndUserInfo endUser = loginAccountInfo.getUserInfo();
+		StringResponse credential = getEndUserCredentialBizService().retrieveEndUserSecretKey(endUser.getAtid(), getStorageRSADecrypt());
 		if (!credential.isSuccessful()) {
 			grant.addMessage(credential.getStrMessage());
 			return grant;
 		}
 		
-		/* 服务人员身份认证 */
-		if (!passwordPlaintext.equals(credential.getResult())) {
-			grant.addMessage("服务人员登录账号或密码错误("+this.getClass().getName()+")");
+		/* 最终用户身份认证（提供的密码能匹配统一密码或私有密码任意一个即可） */
+		boolean passwordEqual = passwordPlaintext.equals(credential.getResult());
+		if (!passwordEqual) {
+			StringResponse accountPassword = getEndUserLoginAccountBizService().retrieveEndUserAccountPassword(loginAccount, getStorageRSADecrypt());
+			if (accountPassword.isSuccessful()) {
+				passwordEqual = passwordPlaintext.equals(accountPassword.getResult());
+			}
+		}
+		if (!passwordEqual) {
+			grant.addMessage("最终用户登录账号或密码错误("+this.getClass().getName()+")");
 			return grant;
 		}
 		
 		/* 生成并缓存code */
 		StringResponse makeCodeResult = 
-				getSignOnUtil().makeGrantCode(AuthenCacheKey.ADMINUSER_GRANTCODE_PREFIX, appId, adminUser.getAtid());
+				getSignOnUtil().makeGrantCode(AuthenCacheKey.ENDUSER_GRANTCODE_PREFIX, appId, endUser.getAtid());
 		grant.setSuccessful(makeCodeResult.isSuccessful());
 		if (makeCodeResult.isSuccessful())
 			grant.setGrantCode(makeCodeResult.getResult());
@@ -127,7 +138,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 验证授权码 */
 		StringResponse getUserIdResult = 
-				getIdentityUtil().getUserIdByCodeOrToken(AuthenCacheKey.ADMINUSER_GRANTCODE_PREFIX, grantCode, appId);
+				getIdentityUtil().getUserIdByCodeOrToken(AuthenCacheKey.ENDUSER_GRANTCODE_PREFIX, grantCode, appId);
 		if (!getUserIdResult.isSuccessful()) {
 			token.addMessage(getUserIdResult.getStrMessage());
 			return token;
@@ -135,7 +146,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 删除授权码（授权码只能用一次） */
 		SimpleResponse rmCodeResult = 
-				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ADMINUSER_GRANTCODE_PREFIX, grantCode, appId);
+				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ENDUSER_GRANTCODE_PREFIX, grantCode, appId);
 		if (!rmCodeResult.isSuccessful()) {
 			token.addMessage(rmCodeResult.getStrMessage());
 			return token;
@@ -143,7 +154,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 生成并记录访问令牌 */
 		StringResponse mkAccessTokenResult = 
-				getSignOnUtil().makeAccessToken(AuthenCacheKey.ADMINUSER_ACCESSTOKEN_PREFIX, appId, getUserIdResult.getResult(), getBusinessAppBizService());
+				getSignOnUtil().makeAccessToken(AuthenCacheKey.ENDUSER_ACCESSTOKEN_PREFIX, appId, getUserIdResult.getResult(), getBusinessAppBizService());
 		if (!mkAccessTokenResult.isSuccessful()) {
 			token.addMessage(mkAccessTokenResult.getStrMessage());
 			return token;
@@ -151,21 +162,21 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 生成并记录刷新令牌 */
 		StringResponse mkFreshTokenResult = 
-				getSignOnUtil().makeRefreshToken(AuthenCacheKey.ADMINUSER_REFRESHTOKEN_PREFIX, appId, getUserIdResult.getResult());
+				getSignOnUtil().makeRefreshToken(AuthenCacheKey.ENDUSER_REFRESHTOKEN_PREFIX, appId, getUserIdResult.getResult());
 		if (!mkFreshTokenResult.isSuccessful()) {
 			token.addMessage(mkFreshTokenResult.getStrMessage());
 			return token;
 		}
 		
-		/* 获得服务人员基本信息 */
-		AdminUserInfo getAdminUserResult = getAdminUserInfoBizService().get(getUserIdResult.getResult());
-		if (!getAdminUserResult.isSuccessful()) {
-			token.addMessage(getAdminUserResult.getStrMessage());
+		/* 获得最终用户基本信息 */
+		EndUserInfo getEndUserResult = getEndUserInfoBizService().get(getUserIdResult.getResult());
+		if (!getEndUserResult.isSuccessful()) {
+			token.addMessage(getEndUserResult.getStrMessage());
 			return token;
 		}
 		
 		/* 所有参数已缓存，拼返回对象 */
-		token.setUserInfo(getAdminUserResult);
+		token.setUserInfo(getEndUserResult);
 		token.setAccessToken(mkAccessTokenResult.getResult());
 		token.setRefreshToken(mkFreshTokenResult.getResult());
 		token.setSuccessful(true);
@@ -173,7 +184,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 	}
 
 	@Override
-	public AccessToken getAccessToken(String fromAppId, String toAppId, String secretKey, String adminUserId,
+	public AccessToken getAccessToken(String fromAppId, String toAppId, String secretKey, String endUserId,
 			String refreshToken) {
 		AccessToken result = new AccessToken();
 		result.setSuccessful(false);
@@ -182,11 +193,11 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 	}
 
 	@Override
-	public AccessToken refreshAccessToken(String appId, String secretKey, String refreshToken, String adminUserId) {
+	public AccessToken refreshAccessToken(String appId, String secretKey, String refreshToken, String endUserId) {
 		AccessToken token = new AccessToken();
 		token.setSuccessful(false);
 		/* 参数检查 */
-		if (EEBeanUtils.isNULL(appId) || EEBeanUtils.isNULL(secretKey) || EEBeanUtils.isNULL(refreshToken) || EEBeanUtils.isNULL(adminUserId)) {
+		if (EEBeanUtils.isNULL(appId) || EEBeanUtils.isNULL(secretKey) || EEBeanUtils.isNULL(refreshToken) || EEBeanUtils.isNULL(endUserId)) {
 			token.addMessage("参数不完整("+this.getClass().getName()+")");
 			return token;
 		}
@@ -211,24 +222,24 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 			return token;
 		}
 		
-		/* 根据刷新令牌获得服务人员标识 */
+		/* 根据刷新令牌获得最终用户标识 */
 		StringResponse getUserIdResult = 
-				getIdentityUtil().getUserIdByCodeOrToken(AuthenCacheKey.ADMINUSER_REFRESHTOKEN_PREFIX, refreshToken, appId);
+				getIdentityUtil().getUserIdByCodeOrToken(AuthenCacheKey.ENDUSER_REFRESHTOKEN_PREFIX, refreshToken, appId);
 		if (!getUserIdResult.isSuccessful()) {
 			token.addMessage(getUserIdResult.getStrMessage());
 			return token;
 		}
 		
 		/* 验证刷新令牌是否属于传入的人员标识 */
-		if (!adminUserId.equals(getUserIdResult.getResult())) {
-			token.addMessage("服务人员刷新令牌错误("+this.getClass().getName()+")");
+		if (!endUserId.equals(getUserIdResult.getResult())) {
+			token.addMessage("最终用户刷新令牌错误("+this.getClass().getName()+")");
 			return token;
 		}
 		
 		/* 删除访问令牌（防止一个用户可以通过两个令牌登录） */
 		/* ★★★★★★★★★★★★★★★★★★★此处有缺陷★★★★★★★★★★★★★★★★★★★★★★★★★ */
 //		SimpleResponse rmAccessTokenResult = 
-//				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ADMINUSER_ACCESSTOKEN_PREFIX, accessToken, appId);
+//				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ENDUSER_ACCESSTOKEN_PREFIX, accessToken, appId);
 //		if (!rmAccessTokenResult.isSuccessful()) {
 //			token.addMessage(rmAccessTokenResult.getStrMessage());
 //			return token;
@@ -237,7 +248,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 删除刷新令牌（一个刷新令牌只能置换一次访问令牌） */
 		SimpleResponse rmFreshTokenResult = 
-				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ADMINUSER_REFRESHTOKEN_PREFIX, refreshToken, appId);
+				getSignOnUtil().removeCodeOrToken(AuthenCacheKey.ENDUSER_REFRESHTOKEN_PREFIX, refreshToken, appId);
 		if (!rmFreshTokenResult.isSuccessful()) {
 			token.addMessage(rmFreshTokenResult.getStrMessage());
 			return token;
@@ -245,7 +256,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 生成并记录访问令牌（超过有效期后令牌会从Redis中自动消失） */
 		StringResponse mkAccessTokenResult = 
-				getSignOnUtil().makeAccessToken(AuthenCacheKey.ADMINUSER_ACCESSTOKEN_PREFIX, appId, getUserIdResult.getResult(), getBusinessAppBizService());
+				getSignOnUtil().makeAccessToken(AuthenCacheKey.ENDUSER_ACCESSTOKEN_PREFIX, appId, getUserIdResult.getResult(), getBusinessAppBizService());
 		if (!mkAccessTokenResult.isSuccessful()) {
 			token.addMessage(mkAccessTokenResult.getStrMessage());
 			return token;
@@ -253,7 +264,7 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 		
 		/* 生成并记录新的刷新令牌 */
 		StringResponse mkFreshTokenResult = 
-				getSignOnUtil().makeRefreshToken(AuthenCacheKey.ADMINUSER_REFRESHTOKEN_PREFIX, appId, getUserIdResult.getResult());
+				getSignOnUtil().makeRefreshToken(AuthenCacheKey.ENDUSER_REFRESHTOKEN_PREFIX, appId, getUserIdResult.getResult());
 		if (!mkFreshTokenResult.isSuccessful()) {
 			token.addMessage(mkFreshTokenResult.getStrMessage());
 			return token;
@@ -271,7 +282,6 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 	**                           Getter & Setter                               **
 	**                                                                         **
 	****************************************************************************/
-	
 	/**
 	 * @return the Redis客户端
 	 */
@@ -327,47 +337,47 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 	public void setBusinessAppBizService(BusinessAppBizService businessAppBizService) {
 		this.businessAppBizService = businessAppBizService;
 	}
-	
+
 	/**
-	 * @return the 服务人员登录秘钥服务
+	 * @return the 最终用户登录秘钥服务
 	 */
-	public AdminUserCredentialBizService getAdminUserCredentialBizService() {
-		return adminUserCredentialBizService;
+	public EndUserCredentialBizService getEndUserCredentialBizService() {
+		return endUserCredentialBizService;
 	}
 
 	/**
-	 * @param adminUserCredentialBizService the 服务人员登录秘钥服务 to set
+	 * @param endUserCredentialBizService the 最终用户登录秘钥服务 to set
 	 */
-	public void setAdminUserCredentialBizService(AdminUserCredentialBizService adminUserCredentialBizService) {
-		this.adminUserCredentialBizService = adminUserCredentialBizService;
+	public void setEndUserCredentialBizService(EndUserCredentialBizService endUserCredentialBizService) {
+		this.endUserCredentialBizService = endUserCredentialBizService;
 	}
 
 	/**
-	 * @return the 服务人员登录账号服务
+	 * @return the 最终用户登录账号服务
 	 */
-	public AdminUserLoginAccountBizService getAdminUserLoginAccountBizService() {
-		return adminUserLoginAccountBizService;
+	public EndUserLoginAccountBizService getEndUserLoginAccountBizService() {
+		return endUserLoginAccountBizService;
 	}
 
 	/**
-	 * @param adminUserLoginAccountBizService the 服务人员登录账号服务 to set
+	 * @param endUserLoginAccountBizService the 最终用户登录账号服务 to set
 	 */
-	public void setAdminUserLoginAccountBizService(AdminUserLoginAccountBizService adminUserLoginAccountBizService) {
-		this.adminUserLoginAccountBizService = adminUserLoginAccountBizService;
-	}
-	
-	/**
-	 * @return the 服务人员管理服务
-	 */
-	public AdminUserInfoBizService getAdminUserInfoBizService() {
-		return adminUserInfoBizService;
+	public void setEndUserLoginAccountBizService(EndUserLoginAccountBizService endUserLoginAccountBizService) {
+		this.endUserLoginAccountBizService = endUserLoginAccountBizService;
 	}
 
 	/**
-	 * @param adminUserInfoBizService the 服务人员管理服务 to set
+	 * @return the 最终用户管理服务
 	 */
-	public void setAdminUserInfoBizService(AdminUserInfoBizService adminUserInfoBizService) {
-		this.adminUserInfoBizService = adminUserInfoBizService;
+	public EndUserInfoBizService getEndUserInfoBizService() {
+		return endUserInfoBizService;
+	}
+
+	/**
+	 * @param endUserInfoBizService the 最终用户管理服务 to set
+	 */
+	public void setEndUserInfoBizService(EndUserInfoBizService endUserInfoBizService) {
+		this.endUserInfoBizService = endUserInfoBizService;
 	}
 
 	/**

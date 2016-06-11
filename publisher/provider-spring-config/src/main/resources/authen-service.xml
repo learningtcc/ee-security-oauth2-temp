@@ -55,4 +55,16 @@
 		<property name="signOnUtil" ref="SignOnUtil"/>
 		<property name="identityUtil" ref="IdentityUtil"/>
 	</bean>
+	<!-- 最终用户登录服务 -->
+	<bean id="EndUserSignOnBizImpl" class="com.eenet.authen.bizimpl.EndUserSignOnBizImpl">
+		<property name="RedisClient" ref="RedisClient"/>
+		<property name="StorageRSADecrypt" ref="StorageRSADecrypt"/>
+		<property name="TransferRSADecrypt" ref="TransferRSADecrypt"/>
+		<property name="businessAppBizService" ref="BusinessAppBizImpl"/>
+		<property name="endUserCredentialBizService" ref="EndUserCredentialBizImpl"/>
+		<property name="endUserLoginAccountBizService" ref="EndUserLoginAccountBizImpl"/>
+		<property name="endUserInfoBizService" ref="EndUserInfoBizImpl"/>
+		<property name="signOnUtil" ref="SignOnUtil"/>
+		<property name="identityUtil" ref="IdentityUtil"/>
+	</bean>
 </beans>

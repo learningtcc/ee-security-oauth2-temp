@@ -53,10 +53,11 @@ public interface EndUserSignOnBizService {
 	 * @param appId 业务应用标识
 	 * @param secretKey 业务应用秘钥，带时间戳加密的形式
 	 * @param refreshToken
+	 * @param endUserId
 	 * @return
 	 * 2016年4月21日
 	 * @author Orion
 	 */
-	public AccessToken refreshAccessToken(String appId, String secretKey, String refreshToken);
+	public AccessToken refreshAccessToken(String appId, String secretKey, String refreshToken, String endUserId);
 
 }
