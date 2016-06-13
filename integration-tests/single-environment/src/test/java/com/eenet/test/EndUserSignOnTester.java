@@ -88,7 +88,7 @@ public class EndUserSignOnTester extends SpringEnvironment {
 			/* 最终用户令牌认证 */
 			UserAccessTokenAuthenRequest tokenAuthenRequest = new UserAccessTokenAuthenRequest();
 			tokenAuthenRequest.setAppId(app.getAppId());
-			tokenAuthenRequest.setSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
+			tokenAuthenRequest.setAppSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
 			tokenAuthenRequest.setUserId(getAccessToken.getUserInfo().getAtid());
 			tokenAuthenRequest.setUserAccessToken(refreshAccessToken.getAccessToken());
 			UserAccessTokenAuthenResponse endUserAuthenResult = 

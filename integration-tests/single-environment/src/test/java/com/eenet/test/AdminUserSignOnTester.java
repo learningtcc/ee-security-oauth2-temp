@@ -86,13 +86,13 @@ public class AdminUserSignOnTester extends SpringEnvironment {
 			/* 应用系统认证 */
 			AppAuthenRequest appAuthenRequest = new AppAuthenRequest();
 			appAuthenRequest.setAppId(app.getAppId());
-			appAuthenRequest.setSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
+			appAuthenRequest.setAppSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
 			identityService.appAuthen(appAuthenRequest);
 			
 			/* 服务人员令牌认证 */
 			UserAccessTokenAuthenRequest tokenAuthenRequest = new UserAccessTokenAuthenRequest();
 			tokenAuthenRequest.setAppId(app.getAppId());
-			tokenAuthenRequest.setSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
+			tokenAuthenRequest.setAppSecretKey(RSAUtil.encryptWithTimeMillis(encrypt, appPassword));
 			tokenAuthenRequest.setUserId(getAccessToken.getUserInfo().getAtid());
 			tokenAuthenRequest.setUserAccessToken(refreshAccessToken.getAccessToken());
 			UserAccessTokenAuthenResponse adminUserAuthenResult = 

@@ -82,7 +82,7 @@ public class IdentityAuthenticationBizImpl implements IdentityAuthenticationBizS
 		/* 参数检查 */
 		if (request == null || EEBeanUtils.isNULL(request.getAppId()) || EEBeanUtils.isNULL(request.getAppSecretKey())
 				|| EEBeanUtils.isNULL(request.getUserId()) || EEBeanUtils.isNULL(request.getUserAccessToken())) {
-			result.addMessage("参数不完整("+this.getClass().getName()+"("+this.getClass().getName()+")");
+			result.addMessage("参数不完整("+this.getClass().getName()+")");
 			return result;
 		}
 		
@@ -96,7 +96,7 @@ public class IdentityAuthenticationBizImpl implements IdentityAuthenticationBizS
 			result.addMessage(e.getMessage()+"("+this.getClass().getName()+")");
 		}
 		if (request==null || !appAuthenResult.isSuccessful()) {
-			result.addMessage("业务应用系统验证失败("+this.getClass().getName()+"("+this.getClass().getName()+")");
+			result.addMessage("业务应用系统验证失败("+this.getClass().getName()+")");
 			return result;
 		}
 		result.setAppIdentityConfirm(true);

@@ -26,7 +26,7 @@
 		<dubbo.version>2.5.3</dubbo.version>
 		<spring-data-redis.version>1.6.2.RELEASE</spring-data-redis.version>
 	</properties>
-	
+
 	<dependencies>
 		<!-- Spring -->
 		<dependency>
@@ -50,7 +50,7 @@
 			<artifactId>aspectjweaver</artifactId>
 			<version>${aspectj.version}</version>
 		</dependency>
-		
+
 		<!-- 集成Redis依赖包 -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -109,6 +109,30 @@
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- http client -->
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-codec</artifactId>
+					<groupId>commons-codec</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160212</version>
 		</dependency>
 	</dependencies>
 
