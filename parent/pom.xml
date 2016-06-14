@@ -64,6 +64,32 @@
 				<activeByDefault>false</activeByDefault>
 			</activation>
 		</profile>
+		
+		<!-- 生成环境 -->
+		<profile>
+			<id>RUNTIME-ORACLE</id>
+			<properties>
+				<!-- oracle配置 -->
+				<db.driverClassName>oracle.jdbc.driver.OracleDriver</db.driverClassName>
+				<db.type>oracle</db.type>
+				<connection.url><![CDATA[jdbc:oracle:thin:@172.16.129.65:1521:yunyingc]]></connection.url>
+				<connection.user>pub_odsuser</connection.user>
+				<connection.password>odsuser20160612</connection.password>
+				<!-- Redis配置 --><!-- redis://:[PASSWORD]@[IP]:[PORT]/[DB] -->
+				<redis.server.1><![CDATA[redis://:REDIS@?:?]]></redis.server.1>
+				<redis.server.2><![CDATA[redis://:REDIS@?:?]]></redis.server.2>
+				<redis.server.3><![CDATA[redis://:REDIS@?:?]]></redis.server.3>
+				<redis.server.4><![CDATA[redis://:REDIS@?:?]]></redis.server.4>
+				<redis.server.5><![CDATA[redis://:REDIS@?:?]]></redis.server.5>
+				<redis.server.6><![CDATA[redis://:REDIS@?:?]]></redis.server.6>
+				<!-- zookeeper配置 -->
+				<zookeeper.address>?:?</zookeeper.address>
+				<dubbo.port>20880</dubbo.port>
+			</properties>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+		</profile>
 	</profiles>
 
 	<properties>

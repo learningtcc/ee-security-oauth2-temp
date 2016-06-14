@@ -48,7 +48,7 @@ public interface EndUserSignOnBizService {
 	/**
 	 * 刷新访问授权码
 	 * 业务规则：当accessToken失效后通过refreshToken重新获取，有效期30天
-	 * 当refreshToken作重新获取refreshToken时，一次性失效并重新颁发
+	 * 当refreshToken作重新获取accessToken时，一次性失效并重新颁发
 	 * 当refreshToken用于系统跳转时，可多次使用
 	 * @param appId 业务应用标识
 	 * @param secretKey 业务应用秘钥，带时间戳加密的形式

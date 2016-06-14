@@ -22,8 +22,6 @@ import com.eenet.user.AdminUserInfo;
 import com.eenet.user.AdminUserInfoBizService;
 import com.eenet.user.EndUserInfo;
 import com.eenet.user.EndUserInfoBizService;
-import com.eenet.util.EEBeanUtils;
-import com.eenet.util.cryptography.EncryptException;
 import com.eenet.util.cryptography.RSAEncrypt;
 import com.eenet.util.cryptography.RSAUtil;
 
@@ -46,7 +44,7 @@ public class NewAppNUser extends SpringEnvironment{
 		System.out.println(admin.getAtid() + "," + admin.getName());
 	}
 	
-	@Test
+//	@Test
 	public void createEndUserNAccountNCredential() throws Exception {
 		for (int i=0;i<5;i++) {
 			EndUserInfo endUser = new EndUserInfo();
@@ -85,13 +83,31 @@ public class NewAppNUser extends SpringEnvironment{
 //	@Test
 	public void createAPP() {
 		BusinessApp app = new BusinessApp();
+		String appSecretKey = "pASS"+(new Random().nextInt(100))+"#";
 		app.setAppName("职工教育网（广州）");
 		app.setAppType(BusinessAppType.WEBAPP);
 		app.setRedirectURIPrefix("http://www.zhigongjiaoyu.com");
-		app.setSecretKey("pASS12#");
-		app = appService.registeApp(app);
+		app.setSecretKey(appSecretKey);
 		app.setDataDescription("勿删！！！重要测试数据");
-		System.out.println("APPID: " + app.getAtid() + ",系统中文名：" + app.getAppName() + ",接入密码:pASS12#,合法地址： "+app.getRedirectURIPrefix());
+		app = appService.registeApp(app);
+		System.out.println("APPID: " + app.getAtid() + ",系统中文名：" + app.getAppName() + ",接入密码: "+appSecretKey+",合法地址： "+app.getRedirectURIPrefix());
+	}
+	
+	@Test
+	public void batchCreateAPP() {
+		String[] appName = {"职业教务系统","运营管理系统","国开学历管理系统","推广系统","教学平台","微课程平台","专继教育管理系统","中小学教育管理系统","高校考试管理系统","广外学历管理系统","华工学历管理系统","华东师范学历管理系统","中山学历管理系统","广州广播教育教学服务","广州职工教育网","广东职工教育网","杭州职工教育网","通行证系统"};
+		String[] description = {"归属：欧阳。勿删！生产数据","归属：成尚谦。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：吴青。勿删！生产数据","归属：邓清泉。勿删！生产数据","归属：邓清泉。勿删！生产数据","归属：陈小刚。勿删！生产数据","归属：陈小刚。勿删！生产数据","归属：左浩洋。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：吴青。勿删！生产数据","归属：吴青。勿删！生产数据","归属：吴青。勿删！生产数据","归属：林浩。勿删！生产数据"};
+		for (int i=0;i<appName.length;i++) {
+			BusinessApp app = new BusinessApp();
+			String appSecretKey = "pASS"+(new Random().nextInt(100))+"#";
+			app.setAppName(appName[i]);
+			app.setAppType(BusinessAppType.WEBAPP);
+			app.setRedirectURIPrefix("N/A");
+			app.setSecretKey(appSecretKey);
+			app.setDataDescription(description[i]);
+			app = appService.registeApp(app);
+			System.out.println("APPID: " + app.getAtid() + ",系统中文名：" + app.getAppName() + ",接入密码: "+appSecretKey+",合法地址： "+app.getRedirectURIPrefix());
+		}
 	}
 	
 //	@Test

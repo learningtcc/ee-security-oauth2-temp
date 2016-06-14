@@ -96,10 +96,18 @@ public class EndUserController {
 				response.addMessage(appAuthen.getStrMessage());
 				return EEBeanUtils.object2Json(response);
 			}
-		} else if (identity.getUserType().equals("adminUser")) {
-			UserAccessTokenAuthenResponse tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
-			if (!tokenAuthen.isSuccessful()) {
-				response.addMessage(tokenAuthen.getStrMessage());
+		} else if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			UserAccessTokenAuthenResponse tokenAuthen = null;
+			if (identity.getUserType().equals("endUser")) {
+				tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+			} else if (identity.getUserType().equals("adminUser")) {
+				tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+			}
+			if (tokenAuthen==null || !tokenAuthen.isSuccessful()) {
+				if (tokenAuthen==null)
+					response.addMessage("验证失败，无错误信息");
+				else
+					response.addMessage(tokenAuthen.getStrMessage());
 				return EEBeanUtils.object2Json(response);
 			}
 		} else {
