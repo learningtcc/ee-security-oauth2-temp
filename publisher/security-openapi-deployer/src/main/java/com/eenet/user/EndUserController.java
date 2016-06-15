@@ -20,6 +20,10 @@ public class EndUserController {
 	@Autowired
 	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
+	public String queryEndUser(APIRequestIdentity identity) {
+		return null;
+	}
+	
 	@RequestMapping(value = "/getEndUser", produces = {"application/json;charset=UTF-8"})// , method = RequestMethod.GET
 	@ResponseBody
 	public String getEndUser(APIRequestIdentity identity, String getEndUserId) {
@@ -115,7 +119,18 @@ public class EndUserController {
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		/* 身份验证通过 */
+		/* 注入当前操作者信息 */
+		endUser.setCrss(identity.getAppId());
+		endUser.setMdss(identity.getAppId());
+		if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			endUser.setCrps(identity.getUserId());
+			endUser.setMdps(identity.getUserId());
+		} else {
+			endUser.setCrps(identity.getUserType());
+			endUser.setMdps(identity.getUserType());
+		}
+		
+		/* 执行业务 */
 		EndUserInfo result = this.endUserInfoBizService.save(endUser);
 		return EEBeanUtils.object2Json(result);
 	}

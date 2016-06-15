@@ -145,6 +145,7 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 				|| !passwordPlainText.equals(existPasswordPlainText)) {
 			result.setSuccessful(false);
 			result.addMessage("原密码不正确！");
+			return result;
 		}
 		
 		/* 新密码加密 */

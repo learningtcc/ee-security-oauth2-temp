@@ -82,7 +82,18 @@ public class AdminUserController {
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		/* 身份验证通过 */
+		/* 注入当前操作者信息 */
+		admin.setCrss(identity.getAppId());
+		admin.setMdss(identity.getAppId());
+		if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			admin.setCrps(identity.getUserId());
+			admin.setMdps(identity.getUserId());
+		} else {
+			admin.setCrps(identity.getUserType());
+			admin.setMdps(identity.getUserType());
+		}
+		
+		/* 执行业务 */
 		AdminUserInfo result = this.adminUserInfoBizService.save(admin);
 		return EEBeanUtils.object2Json(result);
 	}

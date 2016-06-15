@@ -61,7 +61,18 @@ public class EndUserLoginAccountController {
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		/* 身份验证通过 */
+		/* 注入当前操作者信息 */
+		loginAccount.setCrss(identity.getAppId());
+		loginAccount.setMdss(identity.getAppId());
+		if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			loginAccount.setCrps(identity.getUserId());
+			loginAccount.setMdps(identity.getUserId());
+		} else {
+			loginAccount.setCrps(identity.getUserType());
+			loginAccount.setMdps(identity.getUserType());
+		}
+		
+		/* 执行业务 */
 		EndUserLoginAccount result = endUserLoginAccountBizService.registeEndUserLoginAccount(loginAccount);
 		return EEBeanUtils.object2Json(result);
 	}
@@ -103,7 +114,18 @@ public class EndUserLoginAccountController {
 			return EEBeanUtils.object2Json(response);
 		}
 		
-		/* 身份验证通过 */
+		/* 注入当前操作者信息 */
+		credential.setCrss(identity.getAppId());
+		credential.setMdss(identity.getAppId());
+		if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			credential.setCrps(identity.getUserId());
+			credential.setMdps(identity.getUserId());
+		} else {
+			credential.setCrps(identity.getUserType());
+			credential.setMdps(identity.getUserType());
+		}
+		
+		/* 执行业务 */
 		SimpleResponse result = endUserCredentialBizService.initEndUserLoginPassword(credential);
 		return EEBeanUtils.object2Json(result);
 	}
@@ -137,6 +159,18 @@ public class EndUserLoginAccountController {
 			return EEBeanUtils.object2Json(response);
 		}
 		
+		/* 注入当前操作者信息 */
+		curCredential.setCrss(identity.getAppId());
+		curCredential.setMdss(identity.getAppId());
+		if (identity.getUserType().equals("endUser") || identity.getUserType().equals("adminUser")) {
+			curCredential.setCrps(identity.getUserId());
+			curCredential.setMdps(identity.getUserId());
+		} else {
+			curCredential.setCrps(identity.getUserType());
+			curCredential.setMdps(identity.getUserType());
+		}
+		
+		/* 执行业务 */
 		SimpleResponse result = endUserCredentialBizService.changeEndUserLoginPassword(curCredential, newSecretKey);
 		return EEBeanUtils.object2Json(result);
 	}
