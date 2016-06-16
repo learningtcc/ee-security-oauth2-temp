@@ -45,12 +45,12 @@ public class AdminUserCredentialTester extends SpringEnvironment {
 			return;
 		}
 		
-		StringResponse retrievePassword = credentialService.retrieveAdminUserSecretKey(user.getAtid(), StorageRSADecrypt);
+		AdminUserCredential retrievePassword = credentialService.retrieveAdminUserSecretKey(user.getAtid(), StorageRSADecrypt);
 		if (!retrievePassword.isSuccessful()) {
 			System.out.println(retrievePassword.getStrMessage());
 			return;
 		}
-		System.out.println("解密结果："+retrievePassword.getResult());
+		System.out.println("解密结果："+retrievePassword.getPassword());
 		
 		adminService.delete(user.getAtid());
 	}

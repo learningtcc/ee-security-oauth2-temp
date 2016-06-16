@@ -14,6 +14,7 @@ public class AdminUserCredential extends BaseEntity implements BackupDeletedData
 	private static final long serialVersionUID = 1650933617094538884L;
 	private AdminUserInfo adminUser;//服务人员信息
 	private String password;//服务人员登录密码
+	private String encryptionType = "RSA";//加密方式，RSA或MD5，默认RSA
 	
 	/**
 	 * @return the 服务人员信息
@@ -38,5 +39,17 @@ public class AdminUserCredential extends BaseEntity implements BackupDeletedData
 	 */
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	/**
+	 * @return the 加密方式，RSA或MD5，默认RSA
+	 */
+	public String getEncryptionType() {
+		return encryptionType;
+	}
+	/**
+	 * @param encryptionType the 加密方式，RSA或MD5，默认RSA to set
+	 */
+	public void setEncryptionType(String encryptionType) {
+		this.encryptionType = encryptionType;
 	}
 }

@@ -92,7 +92,7 @@ public final class SynAdminUserCredential2Redis {
 			try {
 				Map<String, String> map = new HashMap<String, String>();
 				for (AdminUserCredential credential : this.credentials) {
-					map.put(credential.getAdminUser().getAtid(), credential.getPassword());
+					map.put(credential.getAdminUser().getAtid(), credential.getEncryptionType()+"##"+credential.getPassword());
 					this.redisClient.addMapItem(AuthenCacheKey.ADMINUSER_CREDENTIAL, map, -1);
 				}
 			} catch (RedisOPException e) {

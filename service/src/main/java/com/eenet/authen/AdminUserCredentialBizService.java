@@ -1,7 +1,6 @@
 package com.eenet.authen;
 
 import com.eenet.base.SimpleResponse;
-import com.eenet.base.StringResponse;
 import com.eenet.util.cryptography.RSADecrypt;
 
 /**
@@ -50,19 +49,19 @@ public interface AdminUserCredentialBizService {
 	/**
 	 * 获得服务人员登录密码（密文）
 	 * @param endUserId 用户标识
-	 * @return
+	 * @return 返回对象只包含加密方式和密码密文
 	 * 2016年4月7日
 	 * @author Orion
 	 */
-	public StringResponse retrieveAdminUserSecretKey(String adminUserId);
+	public AdminUserCredential retrieveAdminUserSecretKey(String adminUserId);
 	
 	/**
-	 * 获得服务人员登录密码（明文）
+	 * 获得服务人员登录密码
 	 * @param endUserId 用户标识
-	 * @param redisRSADecrypt 解密参数
-	 * @return
+	 * @param redisRSADecrypt 解密参数（如果确定不是RSA加密则可空，否则不为空）
+	 * @return 如果是RSA加密形式则返回明文，否则返回密文。返回对象只包含加密方式和密码明文（或密文）
 	 * 2016年4月7日
 	 * @author Orion
 	 */
-	public StringResponse retrieveAdminUserSecretKey(String adminUserId, RSADecrypt decrypt);
+	public AdminUserCredential retrieveAdminUserSecretKey(String adminUserId, RSADecrypt decrypt);
 }

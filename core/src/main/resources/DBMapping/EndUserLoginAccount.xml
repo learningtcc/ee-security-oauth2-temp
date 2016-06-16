@@ -13,12 +13,13 @@
 	    
 	    <result column="LOGIN_ACCOUNT" property="loginAccount" jdbcType="VARCHAR" />
 	    <result column="ACCOUNT_TYPE" property="accountType" jdbcType="VARCHAR" />
+	    <result column="ENCRYPTION_TYPE" property="encryptionType" jdbcType="VARCHAR" />
 	    <result column="ACCOUNT_PASSWORD" property="accountLoginPassword" jdbcType="VARCHAR" />
 	    <association column="USER_ID" property="userInfo" javaType="com.eenet.user.EndUserInfo" 
 	    			resultMap="com.eenet.user.EndUserInfo.default"/>
 	</resultMap>
 	<sql id="biz_columns" >
-		USER_ID, LOGIN_ACCOUNT, ACCOUNT_TYPE
+		USER_ID, LOGIN_ACCOUNT, ACCOUNT_TYPE, ENCRYPTION_TYPE
 	</sql>
 	
 	<select id="query_count" resultType="java.lang.Integer" parameterType="com.eenet.base.dao.SQLCondition">
@@ -51,7 +52,7 @@
 			]]><include refid="biz_columns" /><![CDATA[
 		) VALUES (
 			#{atid,jdbcType=VARCHAR}, #{crps,jdbcType=VARCHAR}, #{crss,jdbcType=VARCHAR}, #{dataDescription,jdbcType=VARCHAR},
-			#{userInfo.atid,jdbcType=VARCHAR}, #{loginAccount,jdbcType=VARCHAR}, #{accountType,jdbcType=VARCHAR}
+			#{userInfo.atid,jdbcType=VARCHAR}, #{loginAccount,jdbcType=VARCHAR}, #{accountType,jdbcType=VARCHAR}, #{encryptionType,jdbcType=VARCHAR}
 		)
 		]]>
 	</insert>
@@ -64,7 +65,8 @@
 			REMARK = #{dataDescription,jdbcType=VARCHAR},
 			ADMIN_ID = #{userInfo.atid,jdbcType=VARCHAR},
 			LOGIN_ACCOUNT = #{loginAccount,jdbcType=VARCHAR},
-			ACCOUNT_TYPE = #{accountType,jdbcType=VARCHAR}
+			ACCOUNT_TYPE = #{accountType,jdbcType=VARCHAR},
+			ENCRYPTION_TYPE = #{encryptionType,jdbcType=VARCHAR}
 		WHERE ENDUSER_LOGIN_ACCOUNT_ID = #{atid,jdbcType=VARCHAR}
 		]]>
 	</update>

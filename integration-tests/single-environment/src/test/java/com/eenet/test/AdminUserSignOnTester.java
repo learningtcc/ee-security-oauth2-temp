@@ -24,6 +24,7 @@ import com.eenet.test.env.SpringEnvironment;
 import com.eenet.user.AdminUserInfo;
 import com.eenet.user.AdminUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
+import com.eenet.util.cryptography.EncryptException;
 import com.eenet.util.cryptography.RSAEncrypt;
 import com.eenet.util.cryptography.RSAUtil;
 
@@ -43,6 +44,19 @@ public class AdminUserSignOnTester extends SpringEnvironment {
 	private String appPassword = "999Aa$";
 	
 	@Test
+	public void justLogin() throws Exception {
+		System.out.println("==========================="+this.getClass().getName()+".justLogin()===========================");
+		/* 获得登录授权码 */
+		SignOnGrant getSignOnGrant = 
+				signService.getSignOnGrant("432B31FB2F7C4BB19ED06374FB0C1850", "http://www.zhigongjiaoyu.com", "md5Account", RSAUtil.encryptWithTimeMillis(encrypt, "md5Password"));
+		if (!getSignOnGrant.isSuccessful()){
+			System.out.println("getSignOnGrant : \n"+getSignOnGrant.getStrMessage());
+			return;
+		}
+		System.out.println("getSignOnGrant: "+getSignOnGrant.getGrantCode());
+	}
+	
+//	@Test
 	public void normalFlow() throws Exception{
 		System.out.println("==========================="+this.getClass().getName()+".normalFlow()===========================");
 		try {

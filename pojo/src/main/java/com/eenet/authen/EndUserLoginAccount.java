@@ -16,6 +16,7 @@ public class EndUserLoginAccount extends BaseEntity implements BackupDeletedData
 	private String loginAccount;//登录账号
 	private LoginAccountType accountType;//登录账号类型
 	private String accountLoginPassword;//账号登录密码
+	private String encryptionType = "RSA";//加密方式，RSA或MD5，默认RSA
 	/**
 	 * @return the 用户基本信息
 	 */
@@ -64,4 +65,17 @@ public class EndUserLoginAccount extends BaseEntity implements BackupDeletedData
 	public void setAccountLoginPassword(String accountLoginPassword) {
 		this.accountLoginPassword = accountLoginPassword;
 	}
+	/**
+	 * @return the 加密方式，RSA或MD5，默认RSA
+	 */
+	public String getEncryptionType() {
+		return encryptionType;
+	}
+	/**
+	 * @param encryptionType the 加密方式，RSA或MD5，默认RSA to set
+	 */
+	public void setEncryptionType(String encryptionType) {
+		this.encryptionType = encryptionType;
+	}
+	
 }

@@ -1,6 +1,7 @@
 package com.eenet.authen.bizimpl;
 
 import com.eenet.authen.AccessToken;
+import com.eenet.authen.AdminUserCredential;
 import com.eenet.authen.AdminUserCredentialBizService;
 import com.eenet.authen.AdminUserLoginAccountBizService;
 import com.eenet.authen.AdminUserSignOnBizService;
@@ -16,6 +17,7 @@ import com.eenet.user.AdminUserInfo;
 import com.eenet.user.AdminUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
 import com.eenet.util.cryptography.EncryptException;
+import com.eenet.util.cryptography.MD5Util;
 import com.eenet.util.cryptography.RSADecrypt;
 import com.eenet.util.cryptography.RSAUtil;
 
@@ -71,15 +73,33 @@ public class AdminUserSignOnBizImpl implements AdminUserSignOnBizService {
 			grant.addMessage(adminUser.getStrMessage());
 			return grant;
 		}
-		StringResponse credential = getAdminUserCredentialBizService().retrieveAdminUserSecretKey(adminUser.getAtid(), getStorageRSADecrypt());
+		AdminUserCredential credential = getAdminUserCredentialBizService().retrieveAdminUserSecretKey(adminUser.getAtid(), getStorageRSADecrypt());
 		if (!credential.isSuccessful()) {
 			grant.addMessage(credential.getStrMessage());
 			return grant;
 		}
 		
-		/* 服务人员身份认证 */
-		if (!passwordPlaintext.equals(credential.getResult())) {
-			grant.addMessage("服务人员登录账号或密码错误("+this.getClass().getName()+")");
+		/*
+		 * 判断密码是否能匹配，不对则返回错误信息
+		 * 根据加密方式进行不同的密码匹配
+		 */
+		if (credential.getEncryptionType().equals("RSA")) {
+			if (!passwordPlaintext.equals(credential.getPassword())) {
+				grant.addMessage("服务人员登录账号或密码错误("+this.getClass().getName()+")");
+				return grant;
+			}
+		} else if (credential.getEncryptionType().equals("MD5")) {
+			try {
+				if (!MD5Util.encrypt(passwordPlaintext).equals(credential.getPassword())) {
+					grant.addMessage("服务人员登录账号或密码错误("+this.getClass().getName()+")");
+					return grant;
+				}
+			} catch (EncryptException e) {
+				grant.addMessage(e.toString());
+				return grant;
+			}
+		}  else {
+			grant.addMessage("加密方式未知["+credential.getEncryptionType()+"]("+this.getClass().getName()+")");
 			return grant;
 		}
 		

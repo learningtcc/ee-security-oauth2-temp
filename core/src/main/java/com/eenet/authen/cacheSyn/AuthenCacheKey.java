@@ -19,7 +19,7 @@ public final class AuthenCacheKey {
 	public final static String ADMINUSER_LOGIN_ACCOUNT = "ADMINUSER_LOGIN_ACCOUNT";
 	/**
 	 * 服务人员登录密码
-	 * redisKey:ADMINUSER_CREDENTIAL, mapKey:对应服务人员ID，value:服务人员登录密码(String)
+	 * redisKey:ADMINUSER_CREDENTIAL, mapKey:对应服务人员ID，value:[加密方式]##服务人员登录密码(String)
 	 */
 	public final static String ADMINUSER_CREDENTIAL = "ADMINUSER_CREDENTIAL";
 	/**

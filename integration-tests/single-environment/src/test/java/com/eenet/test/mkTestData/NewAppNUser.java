@@ -38,7 +38,7 @@ public class NewAppNUser extends SpringEnvironment{
 //	@Test
 	public void createAdmin() {
 		AdminUserInfo admin = new AdminUserInfo();
-		admin.setName("职工教育网管理员（广州）");
+		admin.setName("md5密码测试");
 		admin.setDataDescription("勿删！！！重要测试数据");
 		admin = adminService.save(admin);
 		System.out.println(admin.getAtid() + "," + admin.getName());
@@ -93,7 +93,7 @@ public class NewAppNUser extends SpringEnvironment{
 		System.out.println("APPID: " + app.getAtid() + ",系统中文名：" + app.getAppName() + ",接入密码: "+appSecretKey+",合法地址： "+app.getRedirectURIPrefix());
 	}
 	
-	@Test
+//	@Test
 	public void batchCreateAPP() {
 		String[] appName = {"职业教务系统","运营管理系统","国开学历管理系统","推广系统","教学平台","微课程平台","专继教育管理系统","中小学教育管理系统","高校考试管理系统","广外学历管理系统","华工学历管理系统","华东师范学历管理系统","中山学历管理系统","广州广播教育教学服务","广州职工教育网","广东职工教育网","杭州职工教育网","通行证系统"};
 		String[] description = {"归属：欧阳。勿删！生产数据","归属：成尚谦。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：吴青。勿删！生产数据","归属：邓清泉。勿删！生产数据","归属：邓清泉。勿删！生产数据","归属：陈小刚。勿删！生产数据","归属：陈小刚。勿删！生产数据","归属：左浩洋。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：欧阳。勿删！生产数据","归属：吴青。勿删！生产数据","归属：吴青。勿删！生产数据","归属：吴青。勿删！生产数据","归属：林浩。勿删！生产数据"};
@@ -112,9 +112,9 @@ public class NewAppNUser extends SpringEnvironment{
 	
 //	@Test
 	public void createAdminLoginAccountNCredential() throws Exception {
-		String loginAccount = "gz.zhigongjiaoyu";
-		String password = "gzzgjyAdmin";
-		String adminUserId = "742481BBADDB4CCA8394BFDBE36EAE27";
+		String loginAccount = "md5Account";
+		String password = "md5Password";
+		String adminUserId = "38424AE288CF4C1CB22BF324C17AAB74";
 		AdminUserLoginAccount account = new AdminUserLoginAccount();
 		AdminUserInfo admin = new AdminUserInfo();admin.setAtid(adminUserId);
 		account.setUserInfo(admin);
@@ -126,7 +126,7 @@ public class NewAppNUser extends SpringEnvironment{
 		AdminUserCredential credential = new AdminUserCredential();
 		credential.setAdminUser(admin);
 		credential.setPassword(RSAUtil.encryptWithTimeMillis(encrypt, password));
-		credential.setDataDescription("勿删！！！重要测试数据");
+		credential.setDataDescription("勿删！！！重要测试数据，密码："+password);
 		SimpleResponse initResult = adminCredentialService.initAdminUserLoginPassword(credential);
 		
 		if (account.isSuccessful() && initResult.isSuccessful())
