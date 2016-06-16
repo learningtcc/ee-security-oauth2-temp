@@ -156,28 +156,28 @@ public class EndUserLoginAccountBizImpl extends SimpleBizImpl implements EndUser
 	}
 
 	@Override
-	public StringResponse retrieveEndUserAccountPassword(String loginAccount) {
-		StringResponse result = new StringResponse();
-		EndUserLoginAccount account = this.retrieveEndUserLoginAccountInfo(loginAccount);
-		result.setSuccessful(result.isSuccessful());
-		if (account.isSuccessful())
-			result.setResult(account.getAccountLoginPassword());
-		else
-			result.addMessage(account.getStrMessage());
-		return result;
-	}
-
-	@Override
-	public StringResponse retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt) {
-		StringResponse result = this.retrieveEndUserAccountPassword(loginAccount);
-		if (result.isSuccessful()) {
-			try {
-				String plainText = RSAUtil.decrypt(StorageRSAEncrypt, result.getResult());
-				result.setResult(plainText);
-			} catch (EncryptException e) {
-				result.setSuccessful(false);
-				result.addMessage(e.toString());
-			}
+	public EndUserLoginAccount retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt) {
+		/* 取秘钥密文（未取到或不是RSA密文都直接返回结果） */
+		EndUserLoginAccount result = this.retrieveEndUserLoginAccountInfo(loginAccount);
+		if (!result.isSuccessful() || !"RSA".equals(result.getEncryptionType()))
+			return result;
+		
+		/* 参数检查 */
+		if (StorageRSAEncrypt==null) {
+			result.setSuccessful(false);
+			result.addMessage("最终用户解密私钥未知");
+			return result;
+		}
+		
+		/* 密文解密 */
+		try {
+			String plaintext = RSAUtil.decrypt(StorageRSAEncrypt, result.getAccountLoginPassword());
+			if (EEBeanUtils.isNULL(plaintext))
+				throw new EncryptException("解密密码失败（空字符）");
+			result.setAccountLoginPassword(plaintext);
+		} catch (EncryptException e) {
+			result.setSuccessful(false);
+			result.addMessage(e.toString());
 		}
 		return result;
 	}

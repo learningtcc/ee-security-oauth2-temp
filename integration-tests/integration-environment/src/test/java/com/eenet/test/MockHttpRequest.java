@@ -17,7 +17,61 @@ public class MockHttpRequest {
 	public static String baseURL = "http://172.16.165.223:8080/security-api";
 	
 	public static void main(String[] args) throws Exception {
-		MockHttpRequest.adminLoginAndGetEndUserInfo();
+//		MockHttpRequest.adminLoginAndGetEndUserInfo();
+		MockHttpRequest.endUserLoginWithMD5Password();
+	}
+	
+	/**
+	 * 对只设置了私有账号并且是MD5加密的密码进行认证
+	 * @throws Exception
+	 * 2016年6月16日
+	 * @author Orion
+	 */
+	public static void endUserLoginWithMD5Password() throws Exception{
+		/* 公共参数 */
+		HttpClient client = new HttpClient();
+		client.getParams().setContentCharset("UTF-8");
+		client.getHttpConnectionManager().getParams().setConnectionTimeout(3000);
+		PostMethod method;
+		String returnMessage;
+		JSONObject jsonObject;
+		String appId = "432B31FB2F7C4BB19ED06374FB0C1850";
+		String appSecretKey = "pASS12#";
+		String appDomain = "http://www.zhigongjiaoyu.com";
+		String loginAccount = "gjm2015";
+		String password = "gjm2015Password";
+		
+		/* 定义调用地址和调用参数 */
+		String getEndUserSignOnGrantURL = baseURL+"/getEndUserSignOnGrant";
+		String getEndUserAccessTokenURL = baseURL+"/getEndUserAccessToken";
+		
+		/* 获得登录授权码 */
+		method = new PostMethod(getEndUserSignOnGrantURL);
+		method.addParameter("appId", appId);
+		method.addParameter("redirectURI", appDomain);
+		method.addParameter("loginAccount", loginAccount);
+		method.addParameter("password", encrypt(password+"##"+System.currentTimeMillis()));
+		client.executeMethod(method);
+		
+		returnMessage = EncodingUtil.getString(method.getResponseBody(), "UTF-8");
+		System.out.println("returnMessage : " + returnMessage);
+		jsonObject = new JSONObject(returnMessage);
+		String grantCode = jsonObject.get("grantCode").toString();
+		System.out.println("grantCode : " + grantCode);
+		
+		/* 获得访问令牌 */
+		method = new PostMethod(getEndUserAccessTokenURL);
+		method.addParameter("appId", appId);
+		method.addParameter("grantCode", grantCode);
+		method.addParameter("appSecretKey", encrypt(appSecretKey+"##"+System.currentTimeMillis()));
+		client.executeMethod(method);
+		
+		returnMessage = EncodingUtil.getString(method.getResponseBody(), "UTF-8");
+		System.out.println("returnMessage : " + returnMessage);
+//		jsonObject = new JSONObject(returnMessage);
+//		String accessToken = jsonObject.get("accessToken").toString();
+//		String refreshToken = jsonObject.get("refreshToken").toString();
+//		System.out.println("accessToken : " + accessToken + ", refreshToken : " + refreshToken);
 	}
 	
 	public static void adminLoginAndGetEndUserInfo() throws Exception{

@@ -41,8 +41,31 @@ public class EndUserSignOnTester extends SpringEnvironment {
 	private String userPassword = "myPassword";
 	private String appPassword = "999Aa$";
 	
+	/**
+	 * 对只设置了私有账号并且是MD5加密的密码进行认证
+	 * 2016年6月16日
+	 * @author Orion
+	 */
 	@Test
-	public void normalFlow() throws Exception{
+	public void loginByAccountPasswordAndMD5() throws Exception {
+		System.out.println("==========================="+this.getClass().getName()+".loginByAccountPasswordAndMD5()===========================");
+		String appId = "432B31FB2F7C4BB19ED06374FB0C1850";
+		String appSecretKey = "pASS12#";
+		String appDomain = "http://www.zhigongjiaoyu.com";
+		String loginAccount = "gjm2015";
+		String password = "gjm2015Password";
+		/* 获得登录授权码 */
+		SignOnGrant getSignOnGrant = 
+				signService.getSignOnGrant(appId, appDomain, loginAccount, RSAUtil.encryptWithTimeMillis(encrypt, password));
+		if (!getSignOnGrant.isSuccessful()){
+			System.out.println("getSignOnGrant : \n"+getSignOnGrant.getStrMessage());
+			return;
+		}
+		System.out.println("getSignOnGrant: "+getSignOnGrant.getGrantCode());
+	}
+	
+//	@Test
+	public void normalFlow() throws Exception {
 		System.out.println("==========================="+this.getClass().getName()+".normalFlow()===========================");
 		try {
 			if (!this.preNormalFlow())

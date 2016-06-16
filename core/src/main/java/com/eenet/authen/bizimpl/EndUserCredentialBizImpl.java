@@ -5,7 +5,6 @@ import com.eenet.authen.EndUserCredentialBizService;
 import com.eenet.authen.cacheSyn.SynEndUserCredential2Redis;
 import com.eenet.base.SimpleResponse;
 import com.eenet.base.SimpleResultSet;
-import com.eenet.base.StringResponse;
 import com.eenet.base.biz.SimpleBizImpl;
 import com.eenet.base.query.ConditionItem;
 import com.eenet.base.query.QueryCondition;
@@ -15,6 +14,7 @@ import com.eenet.user.EndUserInfo;
 import com.eenet.user.EndUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
 import com.eenet.util.cryptography.EncryptException;
+import com.eenet.util.cryptography.MD5Util;
 import com.eenet.util.cryptography.RSADecrypt;
 import com.eenet.util.cryptography.RSAEncrypt;
 import com.eenet.util.cryptography.RSAUtil;
@@ -119,21 +119,35 @@ public class EndUserCredentialBizImpl extends SimpleBizImpl implements EndUserCr
 			}
 		}
 		
-		/* 判断原有密码是否能匹配，不对则返回错误信息 */
-		String passwordPlainText = null;
-		String existPasswordPlainText = null;
+		/* 获得传入原密码明文 */
+		String passwordPlainText = null;//传入原密码明文
 		try {
 			passwordPlainText = RSAUtil.decryptWithTimeMillis(getTransferRSADecrypt(), curCredential.getPassword(), 2);
-			existPasswordPlainText = RSAUtil.decrypt(getStorageRSADecrypt(), existCredential.getPassword());
 		} catch (EncryptException e) {
 			result.setSuccessful(false);
 			result.addMessage(e.toString());
 			return result;
 		}
-		if (EEBeanUtils.isNULL(passwordPlainText) || EEBeanUtils.isNULL(existPasswordPlainText)
-				|| !passwordPlainText.equals(existPasswordPlainText)) {
+		
+		/* 
+		 * 判断原有密码是否能匹配，不对则返回错误信息
+		 * 根据加密方式进行不同的密码匹配
+		 */
+		try {
+			if (existCredential.getEncryptionType().equals("RSA")) {
+				String existPasswordPlainText = RSAUtil.decrypt(getStorageRSADecrypt(), existCredential.getPassword());
+				if (EEBeanUtils.isNULL(existPasswordPlainText) || !passwordPlainText.equals(existPasswordPlainText))
+					throw new EncryptException("原密码不正确[RSA]！("+this.getClass().getName()+")");
+			} else if (existCredential.getEncryptionType().equals("MD5")) {
+				String passwordPlainTextMD5 = MD5Util.encrypt(passwordPlainText);//对传入原密码进行md5加密
+				if (EEBeanUtils.isNULL(passwordPlainTextMD5) || !passwordPlainTextMD5.equals(existCredential.getPassword()))
+					throw new EncryptException("原密码不正确[MD5]！("+this.getClass().getName()+")");
+			} else {
+				throw new EncryptException("加密方式未知["+existCredential.getEncryptionType()+"]("+this.getClass().getName()+")");
+			}
+		} catch (EncryptException e) {
 			result.setSuccessful(false);
-			result.addMessage("原密码不正确！");
+			result.addMessage(e.toString());
 			return result;
 		}
 		
@@ -200,8 +214,9 @@ public class EndUserCredentialBizImpl extends SimpleBizImpl implements EndUserCr
 	}
 
 	@Override
-	public StringResponse retrieveEndUserSecretKey(String endUserId) {
-		StringResponse result = new StringResponse();
+	public EndUserCredential retrieveEndUserSecretKey(String endUserId) {
+		EndUserCredential result = new EndUserCredential();
+		result.setSuccessful(false);
 		/* 参数检查 */
 		if (EEBeanUtils.isNULL(endUserId)) {
 			result.setSuccessful(false);
@@ -210,43 +225,50 @@ public class EndUserCredentialBizImpl extends SimpleBizImpl implements EndUserCr
 		
 		/* 从缓存取数据 */
 		String ciphertext = SynEndUserCredential2Redis.get(getRedisClient(), endUserId);
-		if (!EEBeanUtils.isNULL(ciphertext))
-			result.setResult(ciphertext);
 		
 		/* 从数据库取数据 */
-		if (EEBeanUtils.isNULL(result.getResult())) {
-			result.setResult(this.retrieveEndUserCredentialInfo(endUserId).getPassword());
+		if (EEBeanUtils.isNULL(ciphertext)) {
+			result = this.retrieveEndUserCredentialInfo(endUserId);
+			if (result.isSuccessful())
+				SynEndUserCredential2Redis.syn(getRedisClient(), result);
+			return result;
 		}
 		
-		/* 从数据库也取不到数据 */
-		if (EEBeanUtils.isNULL(result.getResult())) {
-			result.setSuccessful(false);
-			result.addMessage("未找到指定最终用户的秘钥（密文）");
+		/* 缓存中有数据，分析加密算法和密文 */
+		if (ciphertext.indexOf("RSA##")!=0 && ciphertext.indexOf("MD5##")!=0) {
+			result.addMessage("最终用户密码类型（加密方式）未知");
+			return result;
+		} else if (ciphertext.indexOf("RSA##")==0){//RSA算法加密数据
+			result.setEncryptionType("RSA");
+		} else if (ciphertext.indexOf("MD5##")==0){//MD5算法加密数据
+			result.setEncryptionType("MD5");
 		}
 		
+		result.setPassword(ciphertext.substring(ciphertext.lastIndexOf("##")+2));
+		result.setSuccessful(true);
 		return result;
 	}
 
 	@Override
-	public StringResponse retrieveEndUserSecretKey(String endUserId, RSADecrypt decrypt) {
-		StringResponse result = new StringResponse();
-		/* 参数检查 */
-		if (EEBeanUtils.isNULL(endUserId) || decrypt==null) {
-			result.setSuccessful(false);
-			result.addMessage("未指定最终用户标识或解密私钥未知");
-		}
+	public EndUserCredential retrieveEndUserSecretKey(String endUserId, RSADecrypt decrypt) {
+		/* 取秘钥密文（未取到或不是RSA密文都直接返回结果） */
+		EndUserCredential result = this.retrieveEndUserCredentialInfo(endUserId);
+		if (!result.isSuccessful() || !"RSA".equals(result.getEncryptionType()))
+			return result;
 		
-		/* 取秘钥密文 */
-		StringResponse ciphertextResponse = this.retrieveEndUserSecretKey(endUserId);
-		if (!ciphertextResponse.isSuccessful())
-			return ciphertextResponse;
+		/* 参数检查 */
+		if (decrypt==null) {
+			result.setSuccessful(false);
+			result.addMessage("服务人员解密私钥未知");
+			return result;
+		}
 		
 		/* 密文解密 */
 		try {
-			String plaintext = RSAUtil.decrypt(decrypt, ciphertextResponse.getResult());
+			String plaintext = RSAUtil.decrypt(decrypt, result.getPassword());
 			if (EEBeanUtils.isNULL(plaintext))
 				throw new EncryptException("解密密码失败（空字符）");
-			result.setResult(plaintext);
+			result.setPassword(plaintext);
 		} catch (EncryptException e) {
 			result.setSuccessful(false);
 			result.addMessage(e.toString());

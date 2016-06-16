@@ -41,20 +41,14 @@ public interface EndUserLoginAccountBizService {
 	 * @author Orion
 	 */
 	public EndUserLoginAccount retrieveEndUserLoginAccountInfo(String loginAccount);
-	/**
-	 * 获得登录账号私有密码（密文）
-	 * @param loginAccount
-	 * @return
-	 */
-	public StringResponse retrieveEndUserAccountPassword(String loginAccount);
 	
 	/**
 	 * 获得登录账号私有密码（明文）
-	 * @param loginAccount
-	 * @param StorageRSAEncrypt
-	 * @return
+	 * @param loginAccount 解密参数（如果确定不是RSA加密则可空，否则不为空）
+	 * @param StorageRSAEncrypt 
+	 * @return 如果是RSA加密形式则返回明文，否则返回密文。返回对象只包含加密方式和密码明文（或密文）
 	 */
-	public StringResponse retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt);
+	public EndUserLoginAccount retrieveEndUserAccountPassword(String loginAccount, RSADecrypt StorageRSAEncrypt);
 	/**
 	 * 不应该再考虑维护账号的私有密码
 	 */

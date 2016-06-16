@@ -45,12 +45,12 @@ public class EndUserCredentialTester extends SpringEnvironment {
 			return;
 		}
 		
-		StringResponse retrievePassword = credentialService.retrieveEndUserSecretKey(user.getAtid(), StorageRSADecrypt);
+		EndUserCredential retrievePassword = credentialService.retrieveEndUserSecretKey(user.getAtid(), StorageRSADecrypt);
 		if (!retrievePassword.isSuccessful()) {
 			System.out.println(retrievePassword.getStrMessage());
 			return;
 		}
-		System.out.println("解密结果："+retrievePassword.getResult());
+		System.out.println("解密结果："+retrievePassword.getPassword());
 		
 		userService.delete(user.getAtid());
 	}

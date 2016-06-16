@@ -147,13 +147,11 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 		try {
 			if (existCredential.getEncryptionType().equals("RSA")) {
 				String existPasswordPlainText = RSAUtil.decrypt(getStorageRSADecrypt(), existCredential.getPassword());
-				if (EEBeanUtils.isNULL(passwordPlainText) || EEBeanUtils.isNULL(existPasswordPlainText)
-						|| !passwordPlainText.equals(existPasswordPlainText))
+				if (EEBeanUtils.isNULL(existPasswordPlainText) || !passwordPlainText.equals(existPasswordPlainText))
 					throw new EncryptException("原密码不正确[RSA]！("+this.getClass().getName()+")");
 			} else if (existCredential.getEncryptionType().equals("MD5")) {
 				String passwordPlainTextMD5 = MD5Util.encrypt(passwordPlainText);//对传入原密码进行md5加密
-				if (EEBeanUtils.isNULL(passwordPlainText) || EEBeanUtils.isNULL(passwordPlainTextMD5)
-						|| !passwordPlainTextMD5.equals(existCredential.getPassword()))
+				if (EEBeanUtils.isNULL(passwordPlainTextMD5) || !passwordPlainTextMD5.equals(existCredential.getPassword()))
 					throw new EncryptException("原密码不正确[MD5]！("+this.getClass().getName()+")");
 			} else {
 				throw new EncryptException("加密方式未知["+existCredential.getEncryptionType()+"]("+this.getClass().getName()+")");

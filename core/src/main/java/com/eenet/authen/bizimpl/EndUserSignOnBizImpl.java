@@ -2,6 +2,7 @@ package com.eenet.authen.bizimpl;
 
 import com.eenet.authen.AccessToken;
 import com.eenet.authen.BusinessAppBizService;
+import com.eenet.authen.EndUserCredential;
 import com.eenet.authen.EndUserCredentialBizService;
 import com.eenet.authen.EndUserLoginAccount;
 import com.eenet.authen.EndUserLoginAccountBizService;
@@ -17,6 +18,7 @@ import com.eenet.user.EndUserInfo;
 import com.eenet.user.EndUserInfoBizService;
 import com.eenet.util.EEBeanUtils;
 import com.eenet.util.cryptography.EncryptException;
+import com.eenet.util.cryptography.MD5Util;
 import com.eenet.util.cryptography.RSADecrypt;
 import com.eenet.util.cryptography.RSAUtil;
 
@@ -75,19 +77,45 @@ public class EndUserSignOnBizImpl implements EndUserSignOnBizService {
 			return grant;
 		}
 		EndUserInfo endUser = loginAccountInfo.getUserInfo();
-		StringResponse credential = getEndUserCredentialBizService().retrieveEndUserSecretKey(endUser.getAtid(), getStorageRSADecrypt());
-		if (!credential.isSuccessful()) {
-			grant.addMessage(credential.getStrMessage());
+		EndUserCredential credential = getEndUserCredentialBizService().retrieveEndUserSecretKey(endUser.getAtid(), getStorageRSADecrypt());
+		//用户可能使用账号私有密码登录，所以取统一密码失败也应该继续
+//		if (!credential.isSuccessful()) {
+//			grant.addMessage(credential.getStrMessage());
+//			return grant;
+//		}
+		
+		/*
+		 * 最终用户身份认证（提供的密码能匹配统一密码或私有密码任意一个即可）
+		 * 判断密码是否能匹配，不对则返回错误信息
+		 * 根据加密方式进行不同的密码匹配
+		 */
+		boolean passwordEqual = false;//passwordPlaintext.equals(credential.getResult());
+		String encryptionType = credential.getEncryptionType();
+		//统一密码标识为RSA并且解密后的明文与传入的明文一致
+		if (!passwordEqual && encryptionType.equals("RSA") && passwordPlaintext.equals(credential.getPassword()) )
+			passwordEqual = true;
+		//统一密码标识为MD5并且密文与传入的密文（明文经MD5加密）一致
+		try {
+			if (!passwordEqual && encryptionType.equals("MD5") && MD5Util.encrypt(passwordPlaintext).equals(credential.getPassword()) )
+				passwordEqual = true;
+		} catch (EncryptException e) {
+			grant.addMessage(e.toString());
 			return grant;
 		}
-		
-		/* 最终用户身份认证（提供的密码能匹配统一密码或私有密码任意一个即可） */
-		boolean passwordEqual = passwordPlaintext.equals(credential.getResult());
-		if (!passwordEqual) {
-			StringResponse accountPassword = getEndUserLoginAccountBizService().retrieveEndUserAccountPassword(loginAccount, getStorageRSADecrypt());
-			if (accountPassword.isSuccessful()) {
-				passwordEqual = passwordPlaintext.equals(accountPassword.getResult());
+		if (!passwordEqual) {//获得账号私有密码加密类型
+			encryptionType = getEndUserLoginAccountBizService().retrieveEndUserLoginAccountInfo(loginAccount).getEncryptionType();
+			EndUserLoginAccount accountPassword = getEndUserLoginAccountBizService().retrieveEndUserAccountPassword(loginAccount, getStorageRSADecrypt());
+			if ( !passwordEqual && accountPassword.isSuccessful() && encryptionType.equals("RSA") && passwordPlaintext.equals(accountPassword.getAccountLoginPassword()) )
+				passwordEqual = true;
+			//私有密码标识为MD5并且密文与传入的密文（明文经MD5加密）一致
+			try {
+				if ( !passwordEqual && accountPassword.isSuccessful() && encryptionType.equals("MD5") && MD5Util.encrypt(passwordPlaintext).equals(accountPassword.getAccountLoginPassword()) )
+					passwordEqual = true;
+			} catch (EncryptException e) {
+				grant.addMessage(e.toString());
+				return grant;
 			}
+			
 		}
 		if (!passwordEqual) {
 			grant.addMessage("最终用户登录账号或密码错误("+this.getClass().getName()+")");
