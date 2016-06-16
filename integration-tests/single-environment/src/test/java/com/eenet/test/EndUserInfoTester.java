@@ -2,6 +2,8 @@ package com.eenet.test;
 
 import org.junit.Test;
 
+import com.eenet.base.BooleanResponse;
+import com.eenet.base.SimpleResponse;
 import com.eenet.test.env.SpringEnvironment;
 import com.eenet.user.EndUserInfo;
 import com.eenet.user.EndUserInfoBizService;
@@ -32,6 +34,18 @@ public class EndUserInfoTester extends SpringEnvironment {
 			System.out.println(getEndUser.getStrMessage());
 			return;
 		}
-		System.out.println("============"+getEndUser.getMobile());
+		
+		BooleanResponse check = service.existMobileEmailId("13999999999", null, null);
+		if (!check.isSuccessful()) {
+			System.out.println(check.getStrMessage());
+			return;
+		}
+		System.out.println("exist mobile : " + check.isResult());
+		
+		SimpleResponse delete = service.delete(endUser.getAtid());
+		if (!delete.isSuccessful()) {
+			System.out.println(delete.getStrMessage());
+			return;
+		}
 	}
 }

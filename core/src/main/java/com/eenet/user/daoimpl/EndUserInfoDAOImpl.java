@@ -9,7 +9,14 @@ public class EndUserInfoDAOImpl extends BaseDAOImpl implements EndUserInfoDAOSer
 
 	@Override
 	public boolean existMobileEmailId(EndUserInfo m) throws DBOPException {
-		return false;
+		try {
+			Integer totalRecord = super.getBatisSession().selectOne("com.eenet.user.EndUserInfo.existMobileEmailId",m);
+			return totalRecord.intValue()!=0;
+		} catch (Exception e) {
+			throw new DBOPException(e);
+		} finally {
+			super.getBatisSession().clearCache();
+		}
 	}
 
 }

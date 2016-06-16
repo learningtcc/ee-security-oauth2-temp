@@ -1,6 +1,7 @@
 package com.eenet.user.bizimpl;
 
 import com.eenet.user.dao.EndUserInfoDAOService;
+import com.eenet.base.BooleanResponse;
 import com.eenet.base.SimpleResultSet;
 import com.eenet.base.biz.SimpleBizImpl;
 import com.eenet.base.query.QueryCondition;
@@ -11,6 +12,33 @@ import com.eenet.util.EEBeanUtils;
 
 public class EndUserInfoBizImpl extends SimpleBizImpl implements EndUserInfoBizService {
 	private EndUserInfoDAOService endUserDAOService;
+	
+	@Override
+	public BooleanResponse existMobileEmailId(String mobile, String email, String idCard) {
+		BooleanResponse result = new BooleanResponse();
+		result.setSuccessful(false);
+		if (EEBeanUtils.isNULL(mobile) && EEBeanUtils.isNULL(email) && EEBeanUtils.isNULL(idCard)) {
+			result.addMessage("至少指定手机、邮箱或身份证的其中一项");
+			return result;
+		}
+		
+		try {
+			EndUserInfo queryCondition = new EndUserInfo();
+			queryCondition.setMobile(Long.parseLong(mobile));
+			queryCondition.setEmail(email);
+			queryCondition.setIdCard(idCard);
+			boolean canCreate = getEndUserDAOService().existMobileEmailId(queryCondition);
+			result.setSuccessful(true);
+			result.setResult(canCreate);
+			return result;
+		} catch (NumberFormatException e) {
+			result.addMessage("手机格式错误");
+			return result;
+		} catch (DBOPException e) {
+			result.addMessage(e.toString());
+			return result;
+		}
+	}
 	
 	@Override
 	public EndUserInfo save(EndUserInfo m) {

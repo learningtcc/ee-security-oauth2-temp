@@ -49,6 +49,19 @@
 		USER_CODE, USER_NAME, NAME_PING, SEX, FOLK, BIRTHDAY, ID_CARD, CARD_PHOTO, UNIT_CODE, NATIVE_PLACE, BLOOD_TYPE, WORK_TIME, DEGREE, GRADUATE, ZIP_CODE, HOUSE_HODE_TYPE, REALNAME_CHECKED, MOBILE_CHECKED, EMAIL_CHECKED, FAITH, PROVINCE, CITY, DISTRICT, STREET, ADDRESS, HOMEPAGE, MOBILE, COMPANY_TELE, HOME_TELE, WECHAT, QQ, EMAIL, EE
 	</sql>
 	
+	<select id="existMobileEmailId" resultType="java.lang.Integer" parameterType="com.eenet.user.EndUserInfo">
+		SELECT count(*) FROM CM_USER_INFO WHERE 1=2
+		<if test="mobile != null and mobile != '' ">
+			OR MOBILE = #{mobile,jdbcType=NUMERIC}
+		</if>
+		<if test="email != null and email != '' ">
+			OR EMAIL = #{email,jdbcType=VARCHAR}
+		</if>
+		<if test="idCard != null and idCard != '' ">
+			OR ID_CARD = #{idCard,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
 	<select id="query_count" resultType="java.lang.Integer" parameterType="com.eenet.base.dao.SQLCondition">
 		<![CDATA[
 		SELECT count(*) FROM (

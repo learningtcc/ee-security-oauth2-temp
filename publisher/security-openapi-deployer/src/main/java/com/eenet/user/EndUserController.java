@@ -10,7 +10,9 @@ import com.eenet.authen.APIRequestIdentity;
 import com.eenet.authen.IdentityAuthenticationBizService;
 import com.eenet.authen.request.AppAuthenRequest;
 import com.eenet.authen.response.UserAccessTokenAuthenResponse;
+import com.eenet.base.BooleanResponse;
 import com.eenet.base.SimpleResponse;
+import com.eenet.base.query.QueryCondition;
 import com.eenet.util.EEBeanUtils;
 
 @Controller
@@ -132,6 +134,27 @@ public class EndUserController {
 		
 		/* 执行业务 */
 		EndUserInfo result = this.endUserInfoBizService.save(endUser);
+		return EEBeanUtils.object2Json(result);
+	}
+	
+	@RequestMapping(value = "/endUserExistMEID", produces = {"application/json;charset=UTF-8"})
+	@ResponseBody
+	public String existMobileEmailId(APIRequestIdentity identity,String mobile, String email, String idCard) {
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
+		
+		/* 接入系统认证 */
+		AppAuthenRequest request = new AppAuthenRequest();
+		request.setAppId(identity.getAppId());
+		request.setAppSecretKey(identity.getAppSecretKey());
+		SimpleResponse appAuthen = identityAuthenticationBizService.appAuthen(request);
+		if (!appAuthen.isSuccessful()) {
+			response.addMessage(appAuthen.getStrMessage());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 执行业务 */
+		BooleanResponse result = this.endUserInfoBizService.existMobileEmailId(mobile, email, idCard);
 		return EEBeanUtils.object2Json(result);
 	}
 }
