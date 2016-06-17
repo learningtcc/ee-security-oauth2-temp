@@ -33,8 +33,8 @@ public class MockHttpRequest {
 		String adminId = "742481BBADDB4CCA8394BFDBE36EAE27";
 		String loginAccount = "gz.zhigongjiaoyu";
 		String adminPassword = "gzzgjyAdmin";
-		String getEndUserId = "EE31F64139804467B42866053F1FA6C4";
 		String appDomain = "http://www.zhigongjiaoyu.com";
+		String getEndUserId = "EE31F64139804467B42866053F1FA6C4";
 		
 		/* 定义调用地址和调用参数 */
 		String getAdminSignOnGrantURL = baseURL+"/getAdminSignOnGrant";
