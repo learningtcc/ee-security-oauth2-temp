@@ -1,5 +1,8 @@
 package com.eenet.authen.bizimpl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.eenet.authen.AdminUserCredential;
 import com.eenet.authen.AdminUserCredentialBizService;
 import com.eenet.authen.cacheSyn.SynAdminUserCredential2Redis;
@@ -189,8 +192,50 @@ public class AdminUserCredentialBizImpl extends SimpleBizImpl implements AdminUs
 	@Override
 	public SimpleResponse resetAdminUserLoginPassword(String adminUserId) {
 		SimpleResponse result = new SimpleResponse();
-		result.setSuccessful(false);
-		result.addMessage("该服务暂未开放");
+		/* 参数检查 */
+		if (EEBeanUtils.isNULL(adminUserId)) {
+			result.setSuccessful(false);
+			result.addMessage("未指定要重置密码的服务人员标识("+this.getClass().getName()+")");
+			return result;
+		}
+		
+		/* 判断服务人员是否已设置过密码，没有则返回错误信息 */
+		AdminUserCredential existCredential = retrieveAdminUserCredentialInfo(adminUserId);
+		if (!existCredential.isSuccessful()) {
+			result.setSuccessful(false);
+			result.addMessage(existCredential.getStrMessage());
+			return result;
+		}
+		
+		/* 判断指定的服务人员是否存在 */
+		AdminUserInfo existAdminUser = getAdminUserInfoBizService().get(adminUserId);
+		if (!existAdminUser.isSuccessful() || EEBeanUtils.isNULL(existAdminUser.getAtid())) {
+			result.setSuccessful(false);
+			result.addMessage("未找到指定要重置登录密码对应的服务人员");
+			return result;
+		}
+		
+		/* 新密码加密 */
+		try {
+			String newPasswordPlainText = new SimpleDateFormat("YYYYMMdd").format(new Date());//用传输私钥解出新密码明文
+			String newPasswordCipherText = RSAUtil.encrypt(getStorageRSAEncrypt(), newPasswordPlainText);//用存储公钥加密新密码
+			if (EEBeanUtils.isNULL(newPasswordCipherText))
+				throw new EncryptException("重置密码前加密失败（空字符）");
+			existCredential.setPassword(newPasswordCipherText);
+		} catch (EncryptException e) {
+			result.setSuccessful(false);
+			result.addMessage(e.toString());
+			return result;
+		}
+
+		/* 保存到数据库，再根据保存结果写缓存或返回错误信息 */
+		AdminUserCredential savedResult = super.save(existCredential);
+		result.setSuccessful(savedResult.isSuccessful());
+		if (savedResult.isSuccessful())
+			SynAdminUserCredential2Redis.syn(getRedisClient(), savedResult);
+		else
+			result.addMessage(savedResult.getStrMessage());
+		
 		return result;
 	}
 	

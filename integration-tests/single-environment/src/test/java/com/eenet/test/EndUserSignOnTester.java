@@ -50,7 +50,6 @@ public class EndUserSignOnTester extends SpringEnvironment {
 	public void loginByAccountPasswordAndMD5() throws Exception {
 		System.out.println("==========================="+this.getClass().getName()+".loginByAccountPasswordAndMD5()===========================");
 		String appId = "432B31FB2F7C4BB19ED06374FB0C1850";
-		String appSecretKey = "pASS12#";
 		String appDomain = "http://www.zhigongjiaoyu.com";
 		String loginAccount = "gjm2015";
 		String password = "gjm2015Password";

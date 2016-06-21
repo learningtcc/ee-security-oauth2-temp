@@ -3,6 +3,7 @@ package com.eenet.authen;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.request.AppAuthenRequest;
@@ -19,7 +20,7 @@ public class EndUserLoginAccountController {
 	@Autowired
 	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
-	@RequestMapping(value = "/registeEndUserLoginAccount", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/registeEndUserLoginAccount", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String registeEndUserLoginAccount(APIRequestIdentity identity, EndUserLoginAccount loginAccount) {
 		//all
@@ -77,7 +78,7 @@ public class EndUserLoginAccountController {
 		return EEBeanUtils.object2Json(result);
 	}
 	
-	@RequestMapping(value = "/initEndUserLoginPassword", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/initEndUserLoginPassword", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String initEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential credential) {
 		//anonymous,adminUser,sysUser
@@ -130,7 +131,7 @@ public class EndUserLoginAccountController {
 		return EEBeanUtils.object2Json(result);
 	}
 	
-	@RequestMapping(value = "/changeEndUserLoginPassword", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/changeEndUserLoginPassword", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String changeEndUserLoginPassword(APIRequestIdentity identity, EndUserCredential curCredential, String newSecretKey) {
 		//endUser(self)
@@ -172,6 +173,36 @@ public class EndUserLoginAccountController {
 		
 		/* 执行业务 */
 		SimpleResponse result = endUserCredentialBizService.changeEndUserLoginPassword(curCredential, newSecretKey);
+		return EEBeanUtils.object2Json(result);
+	}
+	
+	@RequestMapping(value = "/resetEndUserLoginPassword", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
+	@ResponseBody
+	public String resetEndUserLoginPassword(APIRequestIdentity identity, String endUserId) {
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
+		/* 参数检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		UserAccessTokenAuthenResponse tokenAuthen = null;
+		if (identity.getUserType().equals("endUser")) {
+			tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+		} else if (identity.getUserType().equals("adminUser")) {
+			tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+		} else {
+			response.addMessage("不允许的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		if (!tokenAuthen.isSuccessful()) {
+			response.addMessage(tokenAuthen.getStrMessage());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 执行业务 */
+		SimpleResponse result = endUserCredentialBizService.resetEndUserLoginPassword(endUserId);
 		return EEBeanUtils.object2Json(result);
 	}
 }

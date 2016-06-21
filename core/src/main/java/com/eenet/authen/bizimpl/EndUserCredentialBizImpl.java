@@ -1,5 +1,8 @@
 package com.eenet.authen.bizimpl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.eenet.authen.EndUserCredential;
 import com.eenet.authen.EndUserCredentialBizService;
 import com.eenet.authen.cacheSyn.SynEndUserCredential2Redis;
@@ -178,8 +181,65 @@ public class EndUserCredentialBizImpl extends SimpleBizImpl implements EndUserCr
 	@Override
 	public SimpleResponse resetEndUserLoginPassword(String endUserId) {
 		SimpleResponse result = new SimpleResponse();
-		result.setSuccessful(false);
-		result.addMessage("该服务暂未开放");
+		/* 参数检查 */
+		if (EEBeanUtils.isNULL(endUserId)) {
+			result.setSuccessful(false);
+			result.addMessage("未指定要重置密码的最终用户标识("+this.getClass().getName()+")");
+			return result;
+		}
+		
+		/* 判断指定的最终用户是否存在 */
+		EndUserInfo existEndUser = getEndUserInfoBizService().get(endUserId);
+		if (!existEndUser.isSuccessful() || EEBeanUtils.isNULL(existEndUser.getAtid())) {
+			result.setSuccessful(false);
+			result.addMessage("未找到指定要重置登录密码对应的最终");
+			return result;
+		}
+		
+		/* 从数据库取秘钥对象 */
+		QueryCondition query = new QueryCondition();
+		query.addCondition(new ConditionItem("endUser.atid",RangeType.EQUAL,endUserId,null));
+		SimpleResultSet<EndUserCredential> queryResult = super.query(query, EndUserCredential.class);
+		if (!queryResult.isSuccessful()) {
+			result.setSuccessful(false);
+			result.addMessage(queryResult.getStrMessage());
+			return result;
+		}
+		
+		/* 根据最终用户是否设置过统一密码，作不同处理 */
+		EndUserCredential newCredential = null;
+		if (queryResult.getCount()==0 && queryResult.getResultSet().size()==0) {
+			newCredential = new EndUserCredential();
+			newCredential.setEndUser(existEndUser);
+		} else if (queryResult.getCount()==1 && queryResult.getResultSet().size()==1) {
+			newCredential = queryResult.getResultSet().get(0);
+		} else {
+			result.setSuccessful(false);
+			result.addMessage("匹配到该最终用户设置了个"+queryResult.getResultSet().size()+"统一登录密码");
+			return result;
+		}
+		
+		/* 新密码加密 */
+		try {
+			String newPasswordPlainText = new SimpleDateFormat("YYYYMMdd").format(new Date());//重置的密码
+			String newPasswordCipherText = RSAUtil.encrypt(getStorageRSAEncrypt(), newPasswordPlainText);//用存储公钥加密新密码
+			if (EEBeanUtils.isNULL(newPasswordCipherText))
+				throw new EncryptException("重置密码前加密失败（空字符）");
+			newCredential.setPassword(newPasswordCipherText);
+		} catch (EncryptException e) {
+			result.setSuccessful(false);
+			result.addMessage(e.toString());
+			return result;
+		}
+		
+		/* 保存到数据库，再根据保存结果写缓存或返回错误信息 */
+		EndUserCredential savedResult = super.save(newCredential);
+		result.setSuccessful(savedResult.isSuccessful());
+		if (savedResult.isSuccessful())
+			SynEndUserCredential2Redis.syn(getRedisClient(), savedResult);
+		else
+			result.addMessage(savedResult.getStrMessage());
+		
 		return result;
 	}
 	

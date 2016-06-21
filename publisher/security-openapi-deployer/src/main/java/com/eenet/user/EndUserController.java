@@ -4,6 +4,7 @@ package com.eenet.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.APIRequestIdentity;
@@ -26,7 +27,7 @@ public class EndUserController {
 		return null;
 	}
 	
-	@RequestMapping(value = "/getEndUser", produces = {"application/json;charset=UTF-8"})// , method = RequestMethod.GET
+	@RequestMapping(value = "/getEndUser", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)// , method = RequestMethod.GET
 	@ResponseBody
 	public String getEndUser(APIRequestIdentity identity, String getEndUserId) {
 		SimpleResponse response = new SimpleResponse();
@@ -64,7 +65,7 @@ public class EndUserController {
 		return EEBeanUtils.object2Json(endUser);
 	}
 	
-	@RequestMapping(value = "/saveEndUser", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/saveEndUser", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String saveEndUser(APIRequestIdentity identity, EndUserInfo endUser) {
 		SimpleResponse response = new SimpleResponse();
@@ -137,7 +138,7 @@ public class EndUserController {
 		return EEBeanUtils.object2Json(result);
 	}
 	
-	@RequestMapping(value = "/endUserExistMEID", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/endUserExistMEID", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String existMobileEmailId(APIRequestIdentity identity,String mobile, String email, String idCard) {
 		SimpleResponse response = new SimpleResponse();

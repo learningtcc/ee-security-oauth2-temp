@@ -3,6 +3,7 @@ package com.eenet.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.APIRequestIdentity;
@@ -19,7 +20,7 @@ public class AdminUserController {
 	@Autowired
 	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
-	@RequestMapping(value = "/getAdminUser", produces = {"application/json;charset=UTF-8"}) //, method = RequestMethod.GET
+	@RequestMapping(value = "/getAdminUser", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST) //, method = RequestMethod.GET
 	@ResponseBody
 	public String getAdminUser(APIRequestIdentity identity, String getAdminUserId) {
 		SimpleResponse response = new SimpleResponse();
@@ -60,7 +61,7 @@ public class AdminUserController {
 		return EEBeanUtils.object2Json(admin);
 	}
 	
-	@RequestMapping(value = "/saveAdminUser", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/saveAdminUser", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String saveAdminUser(APIRequestIdentity identity, AdminUserInfo admin) {
 		SimpleResponse response = new SimpleResponse();

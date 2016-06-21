@@ -3,6 +3,7 @@ package com.eenet.authen;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.request.AppAuthenRequest;
@@ -19,7 +20,7 @@ public class AdminUserLoginAccountController {
 	@Autowired
 	private IdentityAuthenticationBizService identityAuthenticationBizService;
 	
-	@RequestMapping(value = "/registeAdminUserLoginAccount", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/registeAdminUserLoginAccount", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String registeAdminUserLoginAccount(APIRequestIdentity identity, AdminUserLoginAccount loginAccount) {
 		//adminUser,sysUser
@@ -72,7 +73,7 @@ public class AdminUserLoginAccountController {
 		return EEBeanUtils.object2Json(result);
 	}
 	
-	@RequestMapping(value = "/initAdminUserLoginPassword", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/initAdminUserLoginPassword", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String initAdminUserLoginPassword(APIRequestIdentity identity, AdminUserCredential credential) {
 		//adminUser,sysUser
@@ -125,7 +126,7 @@ public class AdminUserLoginAccountController {
 		return EEBeanUtils.object2Json(result);
 	}
 	
-	@RequestMapping(value = "/changeAdminUserLoginPassword", produces = {"application/json;charset=UTF-8"})
+	@RequestMapping(value = "/changeAdminUserLoginPassword", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
 	@ResponseBody
 	public String changeAdminUserLoginPassword(APIRequestIdentity identity, AdminUserCredential curCredential, String newSecretKey) {
 		//adminUser(self)
