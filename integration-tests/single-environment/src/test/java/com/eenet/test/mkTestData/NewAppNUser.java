@@ -110,6 +110,47 @@ public class NewAppNUser extends SpringEnvironment{
 		}
 	}
 	
+	@Test
+	public void batchAdminLoginAccountNCredential() throws Exception{
+		String[] adminUserName = {"广州职工教育网管理员","广东职工教育网管理员","杭州职工教育网管理员","超级管理员"};
+		String[] loginAccount = {"gzjywEEAdmin","gdjywEEAdmin","hzjywEEAdmin","superman"};
+		String[] password = {"sePa$841","SeiA$690","sBPf$881","sEPp$341"};
+		for (int i=0;i<adminUserName.length;i++) {
+			AdminUserInfo admin = new AdminUserInfo();
+			admin.setName(adminUserName[i]);
+			admin = adminService.save(admin);
+			if (!admin.isSuccessful()){
+				System.out.println(admin.getStrMessage());
+				return;
+			}
+			
+			String adminUserId = admin.getAtid();
+			AdminUserLoginAccount account = new AdminUserLoginAccount();
+			account.setUserInfo(admin);
+			account.setAccountType(LoginAccountType.USERNAME);
+			account.setLoginAccount(loginAccount[i]);
+			account = adminAccountService.registeAdminUserLoginAccount(account);
+			if (!account.isSuccessful()){
+				System.out.println(account.getStrMessage());
+				return;
+			}
+			
+			AdminUserCredential credential = new AdminUserCredential();
+			credential.setAdminUser(admin);
+			credential.setPassword(RSAUtil.encryptWithTimeMillis(encrypt, password[i]));
+			SimpleResponse initResult = adminCredentialService.initAdminUserLoginPassword(credential);
+			if (!initResult.isSuccessful()){
+				System.out.println(initResult.getStrMessage());
+				return;
+			}
+			
+			if (account.isSuccessful() && initResult.isSuccessful())
+				System.out.println(adminUserName[i]+"登录账号： "+loginAccount[i]+",登录密码："+password[i]);
+			else
+				System.out.print("出错了");
+		}
+	}
+	
 //	@Test
 	public void createAdminLoginAccountNCredential() throws Exception {
 		String loginAccount = "md5Account";

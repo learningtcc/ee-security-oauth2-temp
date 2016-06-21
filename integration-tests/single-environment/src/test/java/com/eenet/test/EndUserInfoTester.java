@@ -42,10 +42,10 @@ public class EndUserInfoTester extends SpringEnvironment {
 		}
 		System.out.println("exist mobile : " + check.isResult());
 		
-		SimpleResponse delete = service.delete(endUser.getAtid());
-		if (!delete.isSuccessful()) {
-			System.out.println(delete.getStrMessage());
-			return;
-		}
+//		SimpleResponse delete = service.delete(endUser.getAtid());
+//		if (!delete.isSuccessful()) {
+//			System.out.println(delete.getStrMessage());
+//			return;
+//		}
 	}
 }

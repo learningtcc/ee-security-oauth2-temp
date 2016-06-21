@@ -87,13 +87,13 @@
 				<connection.password>odsuser20160612</connection.password>
 				<!-- Redis配置 --><!-- redis://:[PASSWORD]@[IP]:[PORT]/[DB] -->
 				<redis.server.1><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.1>
-				<redis.server.2><![CDATA[redis://:eecn.cn@172.16.129.197:6380]]></redis.server.2>
-				<redis.server.3><![CDATA[redis://:eecn.cn@172.16.129.197:6381]]></redis.server.3>
-				<redis.server.4><![CDATA[redis://:eecn.cn@172.16.134.204:6379]]></redis.server.4>
-				<redis.server.5><![CDATA[redis://:eecn.cn@172.16.134.204:6380]]></redis.server.5>
-				<redis.server.6><![CDATA[redis://:eecn.cn@172.16.134.204:6381]]></redis.server.6>
+				<redis.server.2><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.2>
+				<redis.server.3><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.3>
+				<redis.server.4><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.4>
+				<redis.server.5><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.5>
+				<redis.server.6><![CDATA[redis://:eecn.cn@172.16.129.197:6379]]></redis.server.6>
 				<!-- zookeeper配置 -->
-				<zookeeper.address>172.16.129.197:2181,172.16.129.197:2181</zookeeper.address>
+				<zookeeper.address>172.16.129.197:2181,172.16.134.204:2181</zookeeper.address>
 				<dubbo.port>20880</dubbo.port>
 			</properties>
 			<activation>

@@ -1,5 +1,7 @@
 package com.eenet.test.mkTestData;
 
+import org.junit.Test;
+
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
@@ -14,13 +16,16 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONObject;
 
 public class MockHttpRequest {
-	public static String baseURL = "http://172.16.165.223:8080/security-api";
+//	public static String baseURL = "http://172.16.165.223:8080/security-api";
+	public static String baseURL = "http://172.16.134.136:8080";
 	
 	public static void main(String[] args) throws Exception {
-		MockHttpRequest.adminLoginAndGetEndUserInfo();
+		MockHttpRequest request = new MockHttpRequest();
+		request.adminLoginAndGetEndUserInfo();
 	}
 	
-	public static void adminLoginAndGetEndUserInfo() throws Exception{
+	@Test
+	public void adminLoginAndGetEndUserInfo() throws Exception{
 		/* 公共参数 */
 		HttpClient client = new HttpClient();
 		client.getParams().setContentCharset("UTF-8");
@@ -28,13 +33,15 @@ public class MockHttpRequest {
 		PostMethod method;
 		String returnMessage;
 		JSONObject jsonObject;
-		String appId = "432B31FB2F7C4BB19ED06374FB0C1850";
-		String appSecretKey = "pASS12#";
-		String adminId = "742481BBADDB4CCA8394BFDBE36EAE27";
-		String loginAccount = "gz.zhigongjiaoyu";
-		String adminPassword = "gzzgjyAdmin";
+		//测试机:432B31FB2F7C4BB19ED06374FB0C1850 ,生产机：5215065683F6418AA8202ED24C0D25C0
+		String appId = "5215065683F6418AA8202ED24C0D25C0";
+		//测试机:pASS12# ,生产机：pASS3#
+		String appSecretKey = "pASS3#";
+		String adminId = "EB5C1C72ED714CE9AD7790B1101DB245";
+		String loginAccount = "gdjywEEAdmin";
+		String adminPassword = "SeiA$690";
 		String appDomain = "http://www.zhigongjiaoyu.com";
-		String getEndUserId = "EE31F64139804467B42866053F1FA6C4";
+		String getEndUserId = "a9130e77ac1086aa39aff01228e32708";
 		
 		/* 定义调用地址和调用参数 */
 		String getAdminSignOnGrantURL = baseURL+"/getAdminSignOnGrant";
