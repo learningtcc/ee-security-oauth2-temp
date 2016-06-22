@@ -62,6 +62,25 @@
 		</if>
 	</select>
 	
+	<select id="getByMobileEmailId" resultMap="default" parameterType="com.eenet.user.EndUserInfo" >
+		<![CDATA[
+  		select 
+		    USER_ID, CREATED_DT, CREATED_BY, CREATED_SID, UPDATED_DT, UPDATED_BY, UPDATED_SID, REMARK,
+		    ]]><include refid="biz_columns" /><![CDATA[
+		    from CM_USER_INFO
+	    where 1=2
+	  	]]>
+	  	<if test="mobile != null and mobile != '' ">
+			OR MOBILE = #{mobile,jdbcType=NUMERIC}
+		</if>
+		<if test="email != null and email != '' ">
+			OR EMAIL = #{email,jdbcType=VARCHAR}
+		</if>
+		<if test="idCard != null and idCard != '' ">
+			OR ID_CARD = #{idCard,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
 	<select id="query_count" resultType="java.lang.Integer" parameterType="com.eenet.base.dao.SQLCondition">
 		<![CDATA[
 		SELECT count(*) FROM (

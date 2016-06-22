@@ -158,4 +158,52 @@ public class EndUserController {
 		BooleanResponse result = this.endUserInfoBizService.existMobileEmailId(mobile, email, idCard);
 		return EEBeanUtils.object2Json(result);
 	}
+	
+	@RequestMapping(value = "/getEndUserByMEID", produces = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
+	@ResponseBody
+	public String getByMobileEmailId(APIRequestIdentity identity,String mobile, String email, String idCard) {
+		SimpleResponse response = new SimpleResponse();
+		response.setSuccessful(false);
+		
+		/* 用户类型检查 */
+		if (identity==null || EEBeanUtils.isNULL(identity.getUserType())) {
+			response.addMessage("用户类型未知");
+			return EEBeanUtils.object2Json(response);
+		} else if (!identity.getUserType().equals("endUser") && !identity.getUserType().equals("adminUser")) {
+			response.addMessage(identity.getUserType()+"类型的用户不可通过手机、邮箱或身份证获得最终用户个人信息");
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 接入系统认证 */
+		AppAuthenRequest request = new AppAuthenRequest();
+		request.setAppId(identity.getAppId());
+		request.setAppSecretKey(identity.getAppSecretKey());
+		SimpleResponse appAuthen = identityAuthenticationBizService.appAuthen(request);
+		if (!appAuthen.isSuccessful()) {
+			response.addMessage(appAuthen.getStrMessage());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 根据用户类型验证身份 */
+		UserAccessTokenAuthenResponse tokenAuthen = null;
+		if (identity.getUserType().equals("endUser")) {
+			tokenAuthen = identityAuthenticationBizService.endUserAuthen(identity);
+		} else if (identity.getUserType().equals("adminUser")) {
+			tokenAuthen = identityAuthenticationBizService.adminUserAuthen(identity);
+		} else {
+			response.addMessage("未知的用户类型："+identity.getUserType());
+			return EEBeanUtils.object2Json(response);
+		}
+		if (tokenAuthen==null || !tokenAuthen.isSuccessful()) {
+			if (tokenAuthen==null)
+				response.addMessage("验证失败，无错误信息");
+			else
+				response.addMessage(tokenAuthen.getStrMessage());
+			return EEBeanUtils.object2Json(response);
+		}
+		
+		/* 执行业务 */
+		EndUserInfo result = this.endUserInfoBizService.getByMobileEmailId(mobile, email, idCard);
+		return EEBeanUtils.object2Json(result);
+	}
 }

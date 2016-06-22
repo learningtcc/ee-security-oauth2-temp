@@ -27,6 +27,9 @@
 				<!-- zookeeper配置 -->
 				<zookeeper.address>172.16.165.222:2181</zookeeper.address>
 				<dubbo.port>20880</dubbo.port>
+				<!-- 打war包名称 -->
+				<provider.finalName>provider</provider.finalName>
+				<openapi.finalName>security-api</openapi.finalName>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
@@ -46,6 +49,9 @@
 				<!-- zookeeper配置 -->
 				<zookeeper.address>172.16.165.222:2181</zookeeper.address>
 				<dubbo.port>20880</dubbo.port>
+				<!-- 打war包名称 -->
+				<provider.finalName>provider</provider.finalName>
+				<openapi.finalName>security-api</openapi.finalName>
 			</properties>
 		</profile>
 		
@@ -69,6 +75,9 @@
 				<!-- zookeeper配置 -->
 				<zookeeper.address>172.16.165.223:2181</zookeeper.address>
 				<dubbo.port>20880</dubbo.port>
+				<!-- 打war包名称 -->
+				<provider.finalName>provider</provider.finalName>
+				<openapi.finalName>security-api</openapi.finalName>
 			</properties>
 			<activation>
 				<activeByDefault>false</activeByDefault>
@@ -95,6 +104,9 @@
 				<!-- zookeeper配置 -->
 				<zookeeper.address>172.16.129.197:2181,172.16.134.204:2181</zookeeper.address>
 				<dubbo.port>20880</dubbo.port>
+				<!-- 打war包名称 -->
+				<provider.finalName>provider.security-api.open.gzedu.com</provider.finalName>
+				<openapi.finalName>security-api.open.gzedu.cn.com</openapi.finalName>
 			</properties>
 			<activation>
 				<activeByDefault>false</activeByDefault>

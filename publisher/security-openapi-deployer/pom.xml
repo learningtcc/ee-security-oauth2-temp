@@ -13,7 +13,7 @@
 	<name>security-openapi-deployer</name>
 
 	<build>
-		<finalName>security-api</finalName>
+		<finalName>${openapi.finalName}</finalName>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<resources>
