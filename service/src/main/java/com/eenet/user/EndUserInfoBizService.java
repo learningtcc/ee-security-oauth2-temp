@@ -17,7 +17,7 @@ public interface EndUserInfoBizService {
 	 * @param mobile 手机
 	 * @param email 邮箱
 	 * @param idCard 身份证
-	 * @return 0-false 存在
+	 * @return true表示存在
 	 * 2016年6月16日
 	 * @author Orion
 	 */
