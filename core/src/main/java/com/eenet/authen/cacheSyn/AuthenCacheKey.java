@@ -12,6 +12,8 @@ public final class AuthenCacheKey {
 	 * redisKey:BIZ_APP, mapKey:appId，value:序列化的BusinessApp对象
 	 */
 	public final static String BIZ_APP = "BIZ_APP";
+	
+	
 	/**
 	 * 服务人员登录账号
 	 * redisKey:ADMINUSER_LOGIN_ACCOUNT, mapKey:登录账号，value:服务人员对象(@see com.eenet.authen.AdminUserLoginAccount)
@@ -49,6 +51,7 @@ public final class AuthenCacheKey {
 	 * key: ADMINUSER_REFRESHTOKEN:[refresh token]:[appid], value: 服务人员标识(String)
 	 */
 	public final static String ADMINUSER_REFRESHTOKEN_PREFIX = "ADMINUSER_REFRESHTOKEN";
+	
 	
 	/**
 	 * 最终用户登录授权码前缀

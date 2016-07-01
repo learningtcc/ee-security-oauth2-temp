@@ -17,8 +17,8 @@ public class MockHttpRequest {
 	public static String baseURL = "http://172.16.165.223:8080/security-api";
 	
 	public static void main(String[] args) throws Exception {
-//		MockHttpRequest.adminLoginAndGetEndUserInfo();
-		MockHttpRequest.endUserLoginWithMD5Password();
+		MockHttpRequest.adminLoginAndGetEndUserInfo();
+//		MockHttpRequest.endUserLoginWithMD5Password();
 	}
 	
 	/**

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.eenet.authen.SignOnGrant;
 import com.eenet.util.EEBeanUtils;
+import com.eenet.util.cryptography.RSAEncrypt;
+import com.eenet.util.cryptography.RSAUtil;
 
 @Controller
 public class SignOnController {
@@ -67,5 +69,31 @@ public class SignOnController {
 	@ResponseBody
 	public String getKeySuffix() {
 		return String.valueOf(System.currentTimeMillis());
+	}
+	
+	@Autowired
+	private RSAEncrypt transferRSAEncrypt;
+	
+	@RequestMapping(value = "/endUserLoginTest")
+	@ResponseBody
+	public String endUserLoginTest() throws Exception {
+		String appId = "9CFF0CA0D43D4B2DAC1EFC6A86FCB191";
+		String appSecretKey = RSAUtil.encryptWithTimeMillis(transferRSAEncrypt, "pASS41#");
+		String redirectURI = "http://www.witedu.com";
+		String loginAccount = "18816794947";
+		String password = RSAUtil.encryptWithTimeMillis(transferRSAEncrypt, "888888");
+		
+		SignOnGrant getSignOnGrant = 
+				endUserSignOnBizService.getSignOnGrant(appId, redirectURI, loginAccount, password);
+		if (!getSignOnGrant.isSuccessful())
+			return getSignOnGrant.getStrMessage();
+		
+		AccessToken accessToken = endUserSignOnBizService.getAccessToken(appId, appSecretKey, getSignOnGrant.getGrantCode());
+		if (!accessToken.isSuccessful())
+			return accessToken.getStrMessage();
+		if (EEBeanUtils.isNULL(accessToken.getAccessToken()))
+			return "无法取得accessToken[!]";
+		
+		return "true";
 	}
 }

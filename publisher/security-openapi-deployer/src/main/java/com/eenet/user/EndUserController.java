@@ -82,7 +82,9 @@ public class EndUserController {
 		
 		/* 用户类型可进行操作判断 */
 		boolean opCheck = false;
-		if (identity.getUserType().equals("endUser") && !EEBeanUtils.isNULL(identity.getUserId())
+		if (identity.getUserType().equals("adminUser") && !EEBeanUtils.isNULL(identity.getUserId())) {//管理员可新增和修改数据
+			opCheck = true;
+		} else if (identity.getUserType().equals("endUser") && !EEBeanUtils.isNULL(identity.getUserId())
 				&& identity.getUserId().equals(endUser.getAtid())) {// endUser可修改自己的信息
 			opCheck = true;
 		} else if (identity.getUserType().equals("anonymous") && EEBeanUtils.isNULL(identity.getUserId())) {//anonymous可新增数据

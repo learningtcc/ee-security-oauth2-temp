@@ -75,7 +75,7 @@ public class SignOnUtil {
 		
 		try {
 			String code = EEBeanUtils.getUUID();
-			boolean cached = getRedisClient().setObject(prefix+":"+code+":"+appId, userId, 60 * 2);
+			boolean cached = getRedisClient().setObject(prefix+":"+code+":"+appId, userId, 60 * 15);
 			result.setSuccessful(cached);
 			if (cached)
 				result.setResult(code);
@@ -91,7 +91,7 @@ public class SignOnUtil {
 	/**
 	 * 生成并记录访问令牌
 	 * 访问令牌存储格式：[prefix]:[access token]:[appid]
-	 * 令牌有效期：web应用5分钟，其他类型应用7天
+	 * 令牌有效期：web应用30分钟，其他类型应用1天
 	 * @param prefix
 	 * @param appId
 	 * @param userId
@@ -113,7 +113,7 @@ public class SignOnUtil {
 			//APP类型
 			BusinessAppType appType = businessAppBizService.retrieveApp(appId).getAppType();
 			//访问令牌有效期
-			int expire = BusinessAppType.WEBAPP.equals(appType) ? 60 * 5 : 60 * 60 * 24 * 7;
+			int expire = BusinessAppType.WEBAPP.equals(appType) ? 60 * 30 : 60 * 60 * 24;
 			//记录令牌
 			boolean cached = getRedisClient().setObject(prefix + ":" + accessToken + ":" + appId, userId, expire);
 			result.setSuccessful(cached);

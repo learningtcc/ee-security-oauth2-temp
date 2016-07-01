@@ -14,6 +14,11 @@
 		<property name="url" value="${connection.url}" />
 		<property name="username" value="${connection.user}" />
 		<property name="password" value="${connection.password}" />
+		<property name="maxActive" value="1000"/>
+        <property name="maxIdle" value="20"/>
+        <property name="maxWait" value="60000"/>
+        <property name="initialSize" value="20"/>
+        <property name="removeAbandoned" value="true"/>
 	</bean>
 	<!-- 主数据库session -->
 	<bean id="batisSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">

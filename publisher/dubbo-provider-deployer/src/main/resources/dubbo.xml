@@ -21,5 +21,5 @@
 	<dubbo:registry protocol="zookeeper" address="${zookeeper.address}" client="curator"/>
 	
 	<!-- provider全局配置 -->
-	<dubbo:provider retries="2" timeout="20000" loadbalance="leastactive" />
+	<dubbo:provider retries="5" timeout="60000" loadbalance="leastactive" executes="2000" threads="2000" actives="2000" />
 </beans>

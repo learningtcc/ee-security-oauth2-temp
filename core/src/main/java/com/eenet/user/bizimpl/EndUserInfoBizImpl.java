@@ -27,9 +27,14 @@ public class EndUserInfoBizImpl extends SimpleBizImpl implements EndUserInfoBizS
 		
 		try {
 			EndUserInfo queryCondition = new EndUserInfo();
-			queryCondition.setMobile(Long.parseLong(mobile));
-			queryCondition.setEmail(email);
-			queryCondition.setIdCard(idCard);
+			
+			if (!EEBeanUtils.isNULL(mobile))
+				queryCondition.setMobile(Long.parseLong(mobile));
+			if (!EEBeanUtils.isNULL(email))
+				queryCondition.setEmail(email);
+			if (!EEBeanUtils.isNULL(idCard))
+				queryCondition.setIdCard(idCard);
+			
 			boolean exist = getEndUserDAOService().existMobileEmailId(queryCondition);
 			result.setSuccessful(true);
 			result.setResult(exist);
@@ -59,9 +64,14 @@ public class EndUserInfoBizImpl extends SimpleBizImpl implements EndUserInfoBizS
 		
 		try {
 			EndUserInfo queryCondition = new EndUserInfo();
-			queryCondition.setMobile(Long.parseLong(mobile));
-			queryCondition.setEmail(email);
-			queryCondition.setIdCard(idCard);
+			
+			if (!EEBeanUtils.isNULL(mobile))
+				queryCondition.setMobile(Long.parseLong(mobile));
+			if (!EEBeanUtils.isNULL(email))
+				queryCondition.setEmail(email);
+			if (!EEBeanUtils.isNULL(idCard))
+				queryCondition.setIdCard(idCard);
+			
 			List<EndUserInfo> getResult = getEndUserDAOService().getByMobileEmailId(queryCondition);
 			if (getResult!=null && getResult.size()==1)
 				return getResult.get(0);
